@@ -6,4 +6,25 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.116.2",
+    "python-multipart>=0.0.20",
 ]
+
+### -- Ruff -- ###
+
+[tool.ruff]
+line-length = 100
+select = ["ALL"]
+ignore = [
+    "C901",
+    "G004",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLW0603",
+    "S311",
+    "D413",
+    "D100",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
