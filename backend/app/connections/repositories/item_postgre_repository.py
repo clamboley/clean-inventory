@@ -4,6 +4,7 @@ import datetime
 from uuid import UUID, uuid4
 
 from app.business.entities.item_entity import ItemEntity
+from app.utils.helpers import get_current_time
 
 
 class ItemPostgreRepository:
@@ -54,7 +55,7 @@ class ItemPostgreRepository:
         Returns:
             ItemEntity: The newly created ItemEntity object.
         """
-        now = datetime.datetime.now(tz=datetime.UTC)
+        now = get_current_time()
         item = ItemEntity(
             id=uuid4(),
             name=name,
@@ -89,6 +90,6 @@ class ItemPostgreRepository:
         for field, value in updates.items():
             setattr(item, field, value)
 
-        item.updated_at = datetime.datetime.now(tz=datetime.UTC)
+        item.updated_at = get_current_time()
         item.version += 1
         return item
