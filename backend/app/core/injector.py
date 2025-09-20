@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.business.services.item_service import ItemService
+from app.business.services.user_service import UserService
 from app.connections.dao.postgre_dao import Base
 from app.connections.repositories.item_postgre_repository import ItemPostgreRepository
+from app.connections.repositories.user_postgre_repository import UserPostgreRepository
 from app.core.config import config
 
 
@@ -36,12 +38,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Repositories
     item_repo = ItemPostgreRepository(async_session)
+    user_repo = UserPostgreRepository(async_session)
 
     # Services
     item_service = ItemService(item_repo)
+    user_service = UserService(user_repo)
 
     # Attach to app.state
     app.state.item_service = item_service
+    app.state.user_service = user_service
 
     try:
         yield
