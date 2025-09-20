@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from backend.app.core.timing import get_current_time
 from sqlalchemy import select, update
 
 from app.connections.dao.postgre_dao import RefreshTokenModel
+from app.core.timing import get_current_time
 
 if TYPE_CHECKING:
     from datetime import datetime
