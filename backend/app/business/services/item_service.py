@@ -1,8 +1,9 @@
 from uuid import UUID
 
+from backend.app.core.timing import get_current_time
+
 from app.business.entities.item_entity import ItemEntity
 from app.connections.repositories.item_postgre_repository import ItemPostgreRepository
-from backend.app.core.timing import get_current_time
 from app.exceptions.item_exceptions import ItemNotFoundError
 
 

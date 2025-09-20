@@ -1,10 +1,10 @@
 from datetime import timedelta
 
+from backend.app.core.timing import get_current_time
 from jose import jwt
 from passlib.context import CryptContext
 
 from app.core.config import config
-from backend.app.core.timing import get_current_time
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
