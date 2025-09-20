@@ -1,9 +1,8 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Request
 
 from app.api.validators.item_validators import (
     ItemCreateRequest,
@@ -11,95 +10,103 @@ from app.api.validators.item_validators import (
     ItemsListResponse,
     ItemUpdateRequest,
 )
-from app.business.services.item_service import ItemService
-from app.connections.dao.postgre_dao import get_session
-from app.connections.repositories.item_postgre_repository import ItemPostgreRepository
 from app.exceptions.item_exceptions import ItemNotFoundError
+
+if TYPE_CHECKING:
+    from app.business.services.item_service import ItemService
 
 item_router = APIRouter(prefix="/items", tags=["Items"])
 
 
-@item_router.get("")
-async def list_items(session: Annotated[AsyncSession, Depends(get_session)]) -> ItemsListResponse:
-    """Retrieve a list of all items.
+@item_router.get(
+    "",
+    summary="List all items",
+    description="Return all items in the database",
+)
+async def list_items(request: Request) -> ItemsListResponse:
+    """Retrieve a list of all items from the database.
 
     Args:
-        session (AsyncSession): The async SQLAlchemy session for database operations.
+        request: The FastAPI request object.
 
     Returns:
-        ItemsListResponse: A response containing a list of all items.
+        An ItemsListResponse object containing a list of ItemResponse objects.
     """
-    service = ItemService(ItemPostgreRepository(session))
+    service: ItemService = request.app.state.item_service
     items = await service.list_items()
-    return ItemsListResponse(items=[ItemResponse.model_validate(vars(item)) for item in items])
+    api_items = [ItemResponse.model_validate(vars(item)) for item in items]
+    return ItemsListResponse(items=api_items)
 
 
-@item_router.get("/{item_id}")
-async def get_item(
-    item_id: UUID,
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> ItemResponse:
-    """Retrieve an item by its ID.
+@item_router.get(
+    "/{item_id}",
+    summary="Get an item",
+    description="Retrieve an item by its unique ID",
+)
+async def get_item(item_id: UUID, request: Request) -> ItemResponse:
+    """Retrieve a single item by its ID.
 
     Args:
-        item_id (UUID): The unique identifier of the item to retrieve.
-        session (AsyncSession): The async SQLAlchemy session for database operations.
+        item_id: The UUID of the item to retrieve.
+        request: The FastAPI request object.
 
     Returns:
-        ItemResponse: A response containing the requested item.
+        An ItemResponse object.
 
     Raises:
         HTTPException: If the item with the specified ID is not found.
     """
-    service = ItemService(ItemPostgreRepository(session))
+    service: ItemService = request.app.state.item_service
     try:
         item = await service.get_item(item_id)
         return ItemResponse.model_validate(vars(item))
     except ItemNotFoundError as e:
-        raise HTTPException(HTTPStatus.NOT_FOUND, str(e)) from e
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
 
 
-@item_router.post("", status_code=HTTPStatus.CREATED)
-async def create_item(
-    req: ItemCreateRequest,
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> ItemResponse:
-    """Create a new item.
+@item_router.post(
+    "",
+    summary="Create an item",
+    description="Add a new item to the database",
+    status_code=HTTPStatus.CREATED,
+)
+async def create_item(req: ItemCreateRequest, request: Request) -> ItemResponse:
+    """Create a new item in the database.
 
     Args:
-        req (ItemCreateRequest): The request containing the item data to create.
-        session (AsyncSession): The async SQLAlchemy session for database operations.
+        req: The ItemCreateRequest object containing the item data.
+        request: The FastAPI request object.
 
     Returns:
-        ItemResponse: A response containing the newly created item.
+        An ItemResponse object representing the created item.
     """
-    service = ItemService(ItemPostgreRepository(session))
+    service: ItemService = request.app.state.item_service
     item = await service.create_item(**req.model_dump())
     return ItemResponse.model_validate(vars(item))
 
 
-@item_router.patch("/{item_id}")
-async def update_item(
-    item_id: UUID,
-    req: ItemUpdateRequest,
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> ItemResponse:
-    """Update an existing item.
+@item_router.patch(
+    "/{item_id}",
+    summary="Update an item",
+    description="Update fields of an existing item",
+)
+async def update_item(item_id: UUID, req: ItemUpdateRequest, request: Request) -> ItemResponse:
+    """Update an existing item in the database.
 
     Args:
-        item_id (UUID): The unique identifier of the item to update.
-        req (ItemUpdateRequest): The request containing the item data to update.
-        session (AsyncSession): The async SQLAlchemy session for database operations.
+        item_id: The UUID of the item to update.
+        req: The ItemUpdateRequest object containing the fields to update.
+        request: The FastAPI request object.
 
     Returns:
-        ItemResponse: A response containing the updated item.
+        An ItemResponse object representing the updated item.
 
     Raises:
         HTTPException: If the item with the specified ID is not found.
     """
-    service = ItemService(ItemPostgreRepository(session))
+    service: ItemService = request.app.state.item_service
     try:
         item = await service.update_item(item_id, req.model_dump(exclude_unset=True))
         return ItemResponse.model_validate(vars(item))
     except ItemNotFoundError as e:
-        raise HTTPException(HTTPStatus.NOT_FOUND, str(e)) from e
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e

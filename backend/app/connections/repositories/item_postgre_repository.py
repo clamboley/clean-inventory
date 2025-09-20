@@ -2,91 +2,105 @@ from uuid import UUID
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
 
 from app.business.entities.item_entity import ItemEntity
 from app.connections.dao.postgre_dao import ItemModel
+from app.exceptions.item_exceptions import ItemNotFoundError
 
 
 class ItemPostgreRepository:
-    """Repository class for handling item operations with PostgreSQL database.
+    """Repository class for handling Item entities in PostgreSQL database."""
 
-    This class provides methods to interact with the database for item-related operations,
-    including listing, retrieving, creating, and updating items. It uses SQLAlchemy's
-    async capabilities for database operations.
+    session: sessionmaker[AsyncSession]
 
-    Attributes:
-        session (AsyncSession): The async SQLAlchemy session for database operations.
-    """
-
-    def __init__(self, session: AsyncSession) -> None:
-        """Initialize the ItemPostgreRepository with an async database session.
+    def __init__(self, session_local: sessionmaker[AsyncSession]) -> None:
+        """Initialize the repository with a sessionmaker.
 
         Args:
-            session (AsyncSession): The async SQLAlchemy session for database operations.
+            session_local: A sessionmaker instance for creating async sessions.
         """
-        self.session = session
+        self.session = session_local
 
     async def list_items(self) -> list[ItemEntity]:
-        """Retrieve a list of all items from the database.
+        """Retrieve a list of all Item entities from the database.
 
         Returns:
-            list[ItemEntity]: A list of ItemEntity objects representing all items in the database.
+            A list of ItemEntity objects.
         """
-        result = await self.session.execute(select(ItemModel))
-        rows = result.scalars().all()
-        return [self._to_entity(row) for row in rows]
+        async with self.session() as session:
+            result = await session.execute(select(ItemModel))
+            rows = result.scalars().all()
+            return [self._to_entity(row) for row in rows]
 
-    async def get(self, item_id: UUID) -> ItemEntity | None:
-        """Retrieve an item by its ID from the database.
+    async def get(self, item_id: UUID) -> ItemEntity:
+        """Retrieve a single Item entity by its ID.
 
         Args:
-            item_id (UUID): The unique identifier of the item to retrieve.
+            item_id: The UUID of the item to retrieve.
 
         Returns:
-            ItemEntity | None: The ItemEntity object if found, None otherwise.
+            An ItemEntity object.
+
+        Raises:
+            ItemNotFoundError: If the item with the specified ID is not found.
         """
-        result = await self.session.get(ItemModel, item_id)
-        return self._to_entity(result) if result else None
+        async with self.session() as session:
+            model = await session.get(ItemModel, item_id)
+            if not model:
+                raise ItemNotFoundError(item_id)
+            return self._to_entity(model)
 
     async def create(self, item: ItemEntity) -> ItemEntity:
-        """Create a new item in the database.
+        """Create a new Item entity in the database.
 
         Args:
-            item (ItemEntity): The item to create in the database.
+            item: The ItemEntity object to create.
 
         Returns:
-            ItemEntity: The newly created ItemEntity object.
+            The created ItemEntity object.
         """
-        model = ItemModel(**vars(item))
-        self.session.add(model)
-        await self.session.commit()
-        await self.session.refresh(model)
-        return self._to_entity(model)
+        async with self.session() as session:
+            model = ItemModel(**vars(item))
+            session.add(model)
+            await session.commit()
+            await session.refresh(model)
+            return self._to_entity(model)
 
-    async def update(self, item_id: UUID, updates: dict) -> ItemEntity | None:
-        """Update an existing item in the database.
+    async def update(self, item_id: UUID, updates: dict) -> ItemEntity:
+        """Update an existing Item entity in the database.
 
         Args:
-            item_id (UUID): The unique identifier of the item to update.
-            updates (dict): A dictionary containing the fields to update and their new values.
+            item_id: The UUID of the item to update.
+            updates: A dictionary of field-value pairs to update.
 
         Returns:
-            ItemEntity | None: The updated ItemEntity object if the item was found, None otherwise.
+            The updated ItemEntity object.
+
+        Raises:
+            ItemNotFoundError: If the item with the specified ID is not found.
         """
-        await self.session.execute(
-            update(ItemModel).where(ItemModel.id == item_id).values(**updates),
-        )
-        await self.session.commit()
-        return await self.get(item_id)
+        async with self.session() as session:
+            result = await session.execute(
+                update(ItemModel)
+                .where(ItemModel.id == item_id)
+                .values(**updates)
+                .returning(ItemModel),
+            )
+            model = result.scalar_one_or_none()
+            if not model:
+                raise ItemNotFoundError(item_id)
+            await session.commit()
+            return self._to_entity(model)
 
     def _to_entity(self, model: ItemModel) -> ItemEntity:
-        """Convert a database model to an entity.
+        """Convert a SQLAlchemy model to an ItemEntity object.
 
         Args:
-            model (ItemModel): The database model to convert.
+            model: The SQLAlchemy model to convert.
 
         Returns:
-            ItemEntity: The converted ItemEntity object.
+            An ItemEntity object.
         """
         return ItemEntity(
             id=model.id,
