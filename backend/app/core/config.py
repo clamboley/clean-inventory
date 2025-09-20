@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     app_host: str = "localhost"
     app_port: int = 8000
 
+    # Authentification settings
+    SECRET_KEY: str = "replace-me-with-a-long-random-string"  # noqa: S105
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # short-lived access token
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # refresh token lifetime
+    ALGORITHM: str = "HS256"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # Postgre config

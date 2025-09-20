@@ -55,6 +55,22 @@ class UserPostgreRepository:
                 raise UserNotFoundError(user_id)
             return self._to_entity(model)
 
+    async def get_by_email(self, email: str) -> UserEntity | None:
+        """Retrieves a user by their email address.
+
+        Args:
+            email: The email address of the user to retrieve.
+
+        Returns:
+            The UserEntity object corresponding to the user, or None if the user is not found.
+        """
+        async with self.session() as session:
+            result = await session.execute(select(UserModel).where(UserModel.email == email))
+            model = result.scalars().first()
+            if not model:
+                return None
+            return self._to_entity(model)
+
     async def create(self, user: UserEntity) -> UserEntity:
         """Creates a new user.
 
@@ -96,4 +112,10 @@ class UserPostgreRepository:
         Returns:
             The converted UserEntity object.
         """
-        return UserEntity(id=model.id, name=model.name, email=model.email)
+        return UserEntity(
+            id=model.id,
+            name=model.name,
+            email=model.email,
+            hashed_password=getattr(model, "hashed_password", None),
+            role=getattr(model, "role", "user"),
+        )
