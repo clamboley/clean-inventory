@@ -9,10 +9,14 @@ class UserCreateRequest(BaseModel):
     Attributes:
         name: The name of the user.
         email: The email address of the user.
+        password: The password of the user.
+        role: The role of the user.
     """
 
     name: str
     email: EmailStr
+    password: str | None = None
+    role: str = "user"
 
 
 class UserResponse(BaseModel):
