@@ -21,14 +21,15 @@ line-length = 100
 select = ["ALL"]
 ignore = [
     "C901",
+    "D100",
+    "D104",
+    "D413",
     "G004",
     "PLR0912",
     "PLR0913",
     "PLR0915",
     "PLW0603",
     "S311",
-    "D413",
-    "D100",
 ]
 
 [tool.ruff.lint.pydocstyle]
