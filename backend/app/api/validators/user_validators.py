@@ -26,11 +26,13 @@ class UserResponse(BaseModel):
         id: The UUID of the user.
         name: The name of the user.
         email: The email address of the user.
+        role: The role of the user.
     """
 
     id: UUID
     name: str
     email: EmailStr
+    role: str = "user"
 
 
 class UsersListResponse(BaseModel):
@@ -41,3 +43,13 @@ class UsersListResponse(BaseModel):
     """
 
     users: list[UserResponse]
+
+
+class UserWithPasswordResponse(UserResponse):
+    """Response model for a user with a generated password.
+
+    Attributes:
+        raw_password: The generated password of the user.
+    """
+
+    raw_password: str

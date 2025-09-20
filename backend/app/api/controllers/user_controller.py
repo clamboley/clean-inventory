@@ -8,6 +8,7 @@ from app.api.validators.user_validators import (
     UserCreateRequest,
     UserResponse,
     UsersListResponse,
+    UserWithPasswordResponse,
 )
 from app.exceptions.user_exceptions import UserNotFoundError
 
@@ -22,7 +23,7 @@ async def list_users(request: Request) -> UsersListResponse:
     """Lists all users.
 
     Args:
-        request: The request object containing the application state.
+        request (Request): The request object containing the application state.
 
     Returns:
         UsersListResponse: A response object containing a list of users.
@@ -37,8 +38,8 @@ async def get_user(user_id: UUID, request: Request) -> UserResponse:
     """Retrieves a user by their ID.
 
     Args:
-        user_id: The UUID of the user to retrieve.
-        request: The request object containing the application state.
+        user_id (UUID): The UUID of the user to retrieve.
+        request (Request): The request object containing the application state.
 
     Returns:
         UserResponse: A response object containing the user's details.
@@ -55,28 +56,34 @@ async def get_user(user_id: UUID, request: Request) -> UserResponse:
 
 
 @user_router.post("", summary="Create user", status_code=HTTPStatus.CREATED)
-async def create_user(req: UserCreateRequest, request: Request) -> UserResponse:
+async def create_user(req: UserCreateRequest, request: Request) -> UserWithPasswordResponse:
     """Creates a new user.
 
     Args:
-        req: The request object containing the user's details.
-        request: The request object containing the application state.
+        req (UserCreateRequest): The request object containing the user's details.
+        request (Request): The request object containing the application state.
 
     Returns:
-        UserResponse: A response object containing the newly created user's details.
+        UserWithPasswordResponse: A response object containing the newly created
+            user's details, including the generated password.
     """
     service: UserService = request.app.state.user_service
-    user = await service.create_user(**req.model_dump())
-    return UserResponse.model_validate(vars(user))
-
+    user, raw_password = await service.create_user(**req.model_dump())
+    return UserWithPasswordResponse(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        raw_password=raw_password,
+    )
 
 @user_router.delete("/{user_id}", summary="Delete user", status_code=HTTPStatus.NO_CONTENT)
 async def delete_user(user_id: UUID, request: Request) -> None:
     """Deletes a user by their ID.
 
     Args:
-        user_id: The UUID of the user to delete.
-        request: The request object containing the application state.
+        user_id (UUID): The UUID of the user to delete.
+        request (Request): The request object containing the application state.
 
     Raises:
         HTTPException: If the user is not found.
