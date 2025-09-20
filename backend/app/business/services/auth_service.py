@@ -5,10 +5,9 @@ import secrets
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from backend.app.core.timing import get_current_time
-
 from app.core.config import config
 from app.core.security import create_access_token, verify_password
+from app.core.timing import get_current_time
 from app.exceptions.user_exceptions import UserNotFoundError
 
 if TYPE_CHECKING:

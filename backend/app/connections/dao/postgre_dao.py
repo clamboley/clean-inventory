@@ -4,7 +4,7 @@ from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, Str
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base
 
-from backend.app.core.timing import get_current_time
+from app.core.timing import get_current_time
 
 Base = declarative_base()
 
