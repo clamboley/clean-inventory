@@ -93,6 +93,22 @@ class ItemPostgreRepository:
             await session.commit()
             return self._to_entity(model)
 
+    async def delete(self, item_id: UUID) -> None:
+        """Delete an Item entity from the database.
+
+        Args:
+            item_id: The UUID of the item to delete.
+
+        Raises:
+            ItemNotFoundError: If the item with the specified ID is not found.
+        """
+        async with self.session() as session:
+            model = await session.get(ItemModel, item_id)
+            if not model:
+                raise ItemNotFoundError(item_id)
+            await session.delete(model)
+            await session.commit()
+
     def _to_entity(self, model: ItemModel) -> ItemEntity:
         """Convert a SQLAlchemy model to an ItemEntity object.
 

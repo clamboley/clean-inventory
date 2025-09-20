@@ -101,3 +101,14 @@ class ItemService:
         if not item:
             raise ItemNotFoundError(item_id)
         return item
+
+    async def delete_item(self, item_id: UUID) -> None:
+        """Delete an item from the repository.
+
+        Args:
+            item_id (UUID): The unique identifier of the item to delete.
+
+        Raises:
+            ItemNotFoundError: If the item with the specified ID is not found.
+        """
+        await self.repo.delete(item_id)

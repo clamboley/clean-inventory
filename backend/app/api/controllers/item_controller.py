@@ -110,3 +110,26 @@ async def update_item(item_id: UUID, req: ItemUpdateRequest, request: Request) -
         return ItemResponse.model_validate(vars(item))
     except ItemNotFoundError as e:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
+
+
+@item_router.delete(
+    "/{item_id}",
+    summary="Delete an item",
+    description="Remove an item from the database by its unique ID",
+    status_code=HTTPStatus.NO_CONTENT,
+)
+async def delete_item(item_id: UUID, request: Request) -> None:
+    """Delete an item from the database.
+
+    Args:
+        item_id: The UUID of the item to delete.
+        request: The FastAPI request object.
+
+    Raises:
+        HTTPException: If the item with the specified ID is not found.
+    """
+    service: ItemService = request.app.state.item_service
+    try:
+        await service.delete_item(item_id)
+    except ItemNotFoundError as e:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
