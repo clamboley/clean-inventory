@@ -1,35 +1,12 @@
-import os
 import uuid
-from collections.abc import AsyncGenerator
 
 from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base
 
 from app.utils.helpers import get_current_time
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://inventory_user:strong_password@localhost:5432/inventory_db",
-)
-
-engine = create_async_engine(DATABASE_URL, echo=True, future=True)
-AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
-
-
-async def get_session() -> AsyncGenerator[AsyncSession]:
-    """Create and yield an async database session.
-
-    This function is used as a dependency in FastAPI routes to provide
-    a database session that will be automatically closed after the request.
-
-    Yields:
-        AsyncSession: An async SQLAlchemy session for database operations.
-    """
-    async with AsyncSessionLocal() as session:
-        yield session
 
 
 class UserModel(Base):
