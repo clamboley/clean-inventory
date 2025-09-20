@@ -16,14 +16,14 @@ class UserService:
     """Service class for managing users.
 
     Attributes:
-        repo: The repository used to interact with the database.
+        repo (UserPostgreRepository): The repository used to interact with the database.
     """
 
     def __init__(self, repo: UserPostgreRepository) -> None:
         """Initializes the UserService with a repository.
 
         Args:
-            repo: The repository used to interact with the database.
+            repo (UserPostgreRepository): The repository used to interact with the database.
         """
         self.repo = repo
 
@@ -39,7 +39,7 @@ class UserService:
         """Retrieves a user by their ID.
 
         Args:
-            user_id: The UUID of the user to retrieve.
+            user_id (UUID): The UUID of the user to retrieve.
 
         Returns:
             The UserEntity object corresponding to the user.
@@ -52,20 +52,20 @@ class UserService:
             raise UserNotFoundError(user_id)
         return user
 
-    async def create_user(
+    async def register_user(
         self,
         name: str,
         email: str,
         password: str,
         role: str = "user",
     ) -> UserEntity:
-        """Creates a new user.
+        """Self registration of a new user.
 
         Args:
-            name: The name of the user.
-            email: The email address of the user.
-            password: The password of the user.
-            role: The role of the user. Defaults to "user".
+            name (str): The name of the user.
+            email (str): The email address of the user.
+            password (str): The password of the user. Required.
+            role (str): The role of the user. Defaults to "user".
 
         Returns:
             The newly created UserEntity object.
@@ -73,21 +73,55 @@ class UserService:
         Raises:
             UserAlreadyExistsError: If a user with the same email already exists.
         """
-        # check existence
         existing = await self.repo.get_by_email(email)
         if existing:
             raise UserAlreadyExistsError(email)
-        if password is None:
-            password = secrets.token_urlsafe(12)  # generate a random password
+
         hashed = hash_password(password)
         entity = UserEntity(id=None, name=name, email=email, hashed_password=hashed, role=role)
         return await self.repo.create(entity)
+
+    async def create_user(
+        self,
+        name: str,
+        email: str,
+        password: str | None = None,
+        role: str = "user",
+    ) -> tuple[UserEntity, str]:
+        """Creation of a new user by an admin.
+
+        Args:
+            name (str): The name of the user.
+            email (str): The email address of the user.
+            password (str, optional): The password of the user. If not
+                provided, a random password will be generated.
+            role (str): The role of the user. Defaults to "user".
+
+        Returns:
+            The newly created UserEntity object, along with the raw
+            generated password.
+
+        Raises:
+            UserAlreadyExistsError: If a user with the same email already exists.
+        """
+        email_already_exists = await self.repo.get_by_email(email)
+        if email_already_exists:
+            raise UserAlreadyExistsError(email)
+
+        if password is None:
+            password = secrets.token_urlsafe(12)  # generate a random password
+
+        hashed = hash_password(password)
+        entity = UserEntity(id=None, name=name, email=email, hashed_password=hashed, role=role)
+
+        created_entity = await self.repo.create(entity)
+        return created_entity, password
 
     async def delete_user(self, user_id: UUID) -> None:
         """Deletes a user by their ID.
 
         Args:
-            user_id: The UUID of the user to delete.
+            user_id (UUID): The UUID of the user to delete.
         """
         await self.repo.delete(user_id)
 
@@ -95,8 +129,8 @@ class UserService:
         """Authenticates a user.
 
         Args:
-            email: The email address of the user.
-            password: The password of the user.
+            email (str): The email address of the user.
+            password (str): The password of the user.
 
         Returns:
             The UserEntity corresponding to user if authentication is successful, None otherwise.
@@ -114,7 +148,7 @@ class UserService:
         """Creates access and refresh tokens for a user.
 
         Args:
-            user: The UserEntity object for which to create tokens.
+            user (UserEntity): The UserEntity object for which to create tokens.
 
         Returns:
             A dictionary containing the access token, refresh token, and token type.

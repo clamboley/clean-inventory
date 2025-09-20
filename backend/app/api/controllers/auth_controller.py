@@ -24,8 +24,8 @@ async def register(req: RegisterRequest, request: Request) -> UserResponse:
     """Registers a new user.
 
     Args:
-        req: The registration request containing the user's details.
-        request: The request object containing the application state.
+        req (RegisterRequest): The registration request containing the user's details.
+        request (Request): The request object containing the application state.
 
     Returns:
         UserResponse: A response object containing the newly registered user's details.
@@ -35,19 +35,18 @@ async def register(req: RegisterRequest, request: Request) -> UserResponse:
     """
     user_service: UserService = request.app.state.user_service
     try:
-        user = await user_service.create_user(req.name, req.email, req.password)
+        user = await user_service.register_user(req.name, req.email, req.password)
         return UserResponse.model_validate(vars(user))
     except UserAlreadyExistsError as e:
         raise HTTPException(status_code=HTTPStatus.CONFLICT, detail=str(e)) from e
-
 
 @auth_router.post("/login")
 async def login(req: LoginRequest, request: Request) -> TokenResponse:
     """Authenticates a user and returns access and refresh tokens.
 
     Args:
-        req: The login request containing the user's email and password.
-        request: The request object containing the application state.
+        req (LoginRequest): The login request containing the user's email and password.
+        request (Request): The request object containing the application state.
 
     Returns:
         TokenResponse: A response object containing the access token, refresh token, and token type.
@@ -71,8 +70,8 @@ async def refresh(
     """Rotates a refresh token and returns new access and refresh tokens.
 
     Args:
-        body: The refresh request containing the refresh token.
-        request: The request object containing the application state.
+        body (RefreshRequest): The refresh request containing the refresh token.
+        request (Request): The request object containing the application state.
 
     Returns:
         TokenResponse: A response object containing the new access
@@ -97,8 +96,8 @@ async def logout(body: Annotated[RefreshRequest, Body()] = ..., request: Request
     """Revoke a refresh token (logout this client).
 
     Args:
-        body: The refresh request containing the refresh token.
-        request: The request object containing the application state.
+        body (RefreshRequest): The refresh request containing the refresh token.
+        request (Request): The request object containing the application state.
     """
     auth_service: AuthService = request.app.state.auth_service
     await auth_service.revoke_refresh_token(body.refresh_token)
