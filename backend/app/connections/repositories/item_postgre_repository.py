@@ -1,29 +1,43 @@
-from __future__ import annotations
+from uuid import UUID
 
-import datetime
-from uuid import UUID, uuid4
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.business.entities.item_entity import ItemEntity
-from app.utils.helpers import get_current_time
+from app.connections.dao.postgre_dao import ItemModel
 
 
 class ItemPostgreRepository:
-    """Fake in-memory repo for now. Replace with real Postgres + SQLAlchemy later."""
+    """Repository class for handling item operations with PostgreSQL database.
 
-    def __init__(self) -> None:
-        """Initialize the ItemPostgreRepository with an empty dictionary to store items."""
-        self._items: dict[UUID, ItemEntity] = {}
+    This class provides methods to interact with the database for item-related operations,
+    including listing, retrieving, creating, and updating items. It uses SQLAlchemy's
+    async capabilities for database operations.
 
-    def list_items(self) -> list[ItemEntity]:
-        """Return a list of all items in the repository.
+    Attributes:
+        session (AsyncSession): The async SQLAlchemy session for database operations.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        """Initialize the ItemPostgreRepository with an async database session.
+
+        Args:
+            session (AsyncSession): The async SQLAlchemy session for database operations.
+        """
+        self.session = session
+
+    async def list_items(self) -> list[ItemEntity]:
+        """Retrieve a list of all items from the database.
 
         Returns:
-            list[ItemEntity]: A list of ItemEntity objects representing all items in the repository.
+            list[ItemEntity]: A list of ItemEntity objects representing all items in the database.
         """
-        return list(self._items.values())
+        result = await self.session.execute(select(ItemModel))
+        rows = result.scalars().all()
+        return [self._to_entity(row) for row in rows]
 
-    def get(self, item_id: UUID) -> ItemEntity | None:
-        """Retrieve an item by its ID.
+    async def get(self, item_id: UUID) -> ItemEntity | None:
+        """Retrieve an item by its ID from the database.
 
         Args:
             item_id (UUID): The unique identifier of the item to retrieve.
@@ -31,50 +45,26 @@ class ItemPostgreRepository:
         Returns:
             ItemEntity | None: The ItemEntity object if found, None otherwise.
         """
-        return self._items.get(item_id)
+        result = await self.session.get(ItemModel, item_id)
+        return self._to_entity(result) if result else None
 
-    def create(
-        self,
-        name: str,
-        category: str,
-        serial_number: str,
-        owner_id: UUID | None = None,
-        location: str | None = None,
-        extra: dict | None = None,
-    ) -> ItemEntity:
-        """Create a new item and adds it to the repository.
+    async def create(self, item: ItemEntity) -> ItemEntity:
+        """Create a new item in the database.
 
         Args:
-            name (str): The name of the item.
-            category (str): The type/category of the item.
-            serial_number (str): The serial number of the item.
-            owner_id (UUID, optional): The ID of the owner of the item. Defaults to None.
-            location (str, optional): The current location of the item. Defaults to None.
-            extra (dict, optional): Additional information about the item. Defaults to None.
+            item (ItemEntity): The item to create in the database.
 
         Returns:
             ItemEntity: The newly created ItemEntity object.
         """
-        now = get_current_time()
-        item = ItemEntity(
-            id=uuid4(),
-            name=name,
-            category=category,
-            serial_number=serial_number,
-            owner_id=owner_id,
-            location=location,
-            extra=extra or {},
-            status="available",
-            created_at=now,
-            updated_at=now,
-            version=1,
-        )
+        model = ItemModel(**vars(item))
+        self.session.add(model)
+        await self.session.commit()
+        await self.session.refresh(model)
+        return self._to_entity(model)
 
-        self._items[item.id] = item
-        return item
-
-    def update(self, item_id: UUID, updates: dict) -> ItemEntity | None:
-        """Updates an existing item in the repository.
+    async def update(self, item_id: UUID, updates: dict) -> ItemEntity | None:
+        """Update an existing item in the database.
 
         Args:
             item_id (UUID): The unique identifier of the item to update.
@@ -83,13 +73,31 @@ class ItemPostgreRepository:
         Returns:
             ItemEntity | None: The updated ItemEntity object if the item was found, None otherwise.
         """
-        item = self._items.get(item_id)
-        if not item:
-            return None
+        await self.session.execute(
+            update(ItemModel).where(ItemModel.id == item_id).values(**updates),
+        )
+        await self.session.commit()
+        return await self.get(item_id)
 
-        for field, value in updates.items():
-            setattr(item, field, value)
+    def _to_entity(self, model: ItemModel) -> ItemEntity:
+        """Convert a database model to an entity.
 
-        item.updated_at = get_current_time()
-        item.version += 1
-        return item
+        Args:
+            model (ItemModel): The database model to convert.
+
+        Returns:
+            ItemEntity: The converted ItemEntity object.
+        """
+        return ItemEntity(
+            id=model.id,
+            name=model.name,
+            category=model.category,
+            serial_number=model.serial_number,
+            extra=model.extra,
+            owner_id=model.owner_id,
+            location=model.location,
+            status=model.status,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            version=model.version,
+        )

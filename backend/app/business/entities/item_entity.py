@@ -27,7 +27,7 @@ class ItemEntity:
 
     """
 
-    id: UUID
+    id: UUID | None
     name: str
     category: str
     serial_number: str | None
