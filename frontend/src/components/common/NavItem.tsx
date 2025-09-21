@@ -1,6 +1,6 @@
-import { Tooltip, NavLink } from '@mantine/core';
 import { IconChevronRight } from '@tabler/icons-react';
 import { Link, useLocation } from 'react-router-dom';
+import { NavLink, Tooltip } from '@mantine/core';
 
 interface NavItemProps {
   collapsed: boolean;
@@ -10,13 +10,7 @@ interface NavItemProps {
   disabled?: boolean;
 }
 
-export function NavItem({
-  collapsed,
-  label,
-  icon,
-  to,
-  disabled,
-}: NavItemProps) {
+export function NavItem({ collapsed, label, icon, to, disabled }: NavItemProps) {
   const location = useLocation();
   const active = location.pathname === to;
 

@@ -1,8 +1,5 @@
+import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand } from '@tabler/icons-react';
 import { Button } from '@mantine/core';
-import {
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-} from '@tabler/icons-react';
 
 interface SidebarToggleProps {
   collapsed: boolean;
