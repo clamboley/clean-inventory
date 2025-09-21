@@ -3,6 +3,7 @@ import { IconChevronDown, IconChevronUp, IconSearch, IconSelector } from '@table
 import cx from 'clsx';
 import {
   Avatar,
+  Badge,
   Center,
   Checkbox,
   Group,
@@ -15,14 +16,14 @@ import {
 import { AppLayout } from '../../components/layout/AppLayout';
 import classes from './TableScrollArea.module.css';
 
-interface RowData {
+interface InventoryItem {
   id: string;
-  name: string;
-  email: string;
-  country: string;
-  job: string;
-  company: string;
-  avatar: string;
+  item: string;
+  category: string;
+  serialNumber: string;
+  owner: string;
+  ownerAvatar: string;
+  location: string;
 }
 
 interface ThProps {
@@ -53,7 +54,7 @@ function Th({ children, reversed, sorted, onSort }: ThProps) {
   );
 }
 
-function filterData(data: RowData[], search: string) {
+function filterData(data: InventoryItem[], search: string) {
   const query = search.toLowerCase().trim();
   return data.filter((item) =>
     Object.values(item).some((value) => value.toString().toLowerCase().includes(query))
@@ -61,8 +62,8 @@ function filterData(data: RowData[], search: string) {
 }
 
 function sortData(
-  data: RowData[],
-  payload: { sortBy: keyof RowData | null; reversed: boolean; search: string }
+  data: InventoryItem[],
+  payload: { sortBy: keyof InventoryItem | null; reversed: boolean; search: string }
 ) {
   const { sortBy } = payload;
 
@@ -73,236 +74,265 @@ function sortData(
   return filterData(
     [...data].sort((a, b) => {
       if (payload.reversed) {
-        return b[sortBy].localeCompare(a[sortBy]);
+        return b[sortBy].toString().localeCompare(a[sortBy].toString());
       }
-      return a[sortBy].localeCompare(b[sortBy]);
+      return a[sortBy].toString().localeCompare(b[sortBy].toString());
     }),
     payload.search
   );
 }
 
-const data: RowData[] = [
+const getCategoryColor = (category: string) => {
+  switch (category.toLowerCase()) {
+    case 'laptop':
+      return 'blue';
+    case 'desktop':
+      return 'green';
+    case 'monitor':
+      return 'purple';
+    case 'keyboard':
+      return 'orange';
+    case 'mouse':
+      return 'red';
+    case 'tablet':
+      return 'cyan';
+    case 'phone':
+      return 'pink';
+    case 'printer':
+      return 'gray';
+    case 'server':
+      return 'dark';
+    case 'router':
+      return 'indigo';
+    default:
+      return 'gray';
+  }
+};
+
+const inventoryData: InventoryItem[] = [
   {
     id: '1',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
-    name: 'Robert Wolfkisser',
-    email: 'rob_wolf@gmail.com',
-    country: 'United States',
-    job: 'Engineer',
-    company: 'TechCorp Inc.',
+    item: 'MacBook Pro 16"',
+    category: 'Laptop',
+    serialNumber: 'MBP-2023-001',
+    owner: 'Sarah Johnson',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-4.png',
+    location: 'Room A-101',
   },
   {
     id: '2',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
-    name: 'Jill Jailbreaker',
-    email: 'jj@breaker.com',
-    country: 'Canada',
-    job: 'Engineer',
-    company: 'SecureTech Ltd.',
+    item: 'Dell XPS Desktop',
+    category: 'Desktop',
+    serialNumber: 'DXD-2023-005',
+    owner: 'Michael Brown',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-5.png',
+    location: 'Room B-205',
   },
   {
     id: '3',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
-    name: 'Henry Silkeater',
-    email: 'henry@silkeater.io',
-    country: 'United Kingdom',
-    job: 'Designer',
-    company: 'Creative Solutions',
+    item: 'Samsung 4K Monitor',
+    category: 'Monitor',
+    serialNumber: 'SM4K-2023-012',
+    owner: 'Emma Wilson',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-6.png',
+    location: 'Room A-103',
   },
   {
     id: '4',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
-    name: 'Bill Horsefighter',
-    email: 'bhorsefighter@gmail.com',
-    country: 'Australia',
-    job: 'Designer',
-    company: 'Design Studios',
+    item: 'Logitech MX Keys',
+    category: 'Keyboard',
+    serialNumber: 'LMX-2023-034',
+    owner: 'David Lee',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png',
+    location: 'Room B-201',
   },
   {
     id: '5',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
-    name: 'Jeremy Footviewer',
-    email: 'jeremy@foot.dev',
-    country: 'Germany',
-    job: 'Manager',
-    company: 'ManagePro GmbH',
+    item: 'Razer DeathAdder V3',
+    category: 'Mouse',
+    serialNumber: 'RDA-2023-089',
+    owner: 'Lisa Garcia',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-9.png',
+    location: 'Room C-301',
   },
   {
     id: '6',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-4.png',
-    name: 'Sarah Johnson',
-    email: 'sarah.j@techmail.com',
-    country: 'France',
-    job: 'Developer',
-    company: 'CodeCraft SARL',
+    item: 'iPad Pro 12.9"',
+    category: 'Tablet',
+    serialNumber: 'IPD-2023-023',
+    owner: 'Robert Wilson',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
+    location: 'Room A-105',
   },
   {
     id: '7',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-5.png',
-    name: 'Michael Brown',
-    email: 'mbrown@enterprise.org',
-    country: 'Japan',
-    job: 'Analyst',
-    company: 'DataFlow Corp',
+    item: 'iPhone 14 Pro',
+    category: 'Phone',
+    serialNumber: 'IP14-2023-067',
+    owner: 'Jennifer Smith',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
+    location: 'Room B-203',
   },
   {
     id: '8',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-6.png',
-    name: 'Emma Wilson',
-    email: 'emma.wilson@startup.io',
-    country: 'Netherlands',
-    job: 'Product Manager',
-    company: 'InnovateTech BV',
+    item: 'HP LaserJet Pro',
+    category: 'Printer',
+    serialNumber: 'HLP-2023-045',
+    owner: 'Office Manager',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
+    location: 'Print Room',
   },
   {
     id: '9',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png',
-    name: 'David Lee',
-    email: 'dlee@consulting.com',
-    country: 'South Korea',
-    job: 'Consultant',
-    company: 'Strategic Solutions',
+    item: 'Dell PowerEdge R750',
+    category: 'Server',
+    serialNumber: 'DPE-2023-001',
+    owner: 'IT Department',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
+    location: 'Server Room',
   },
   {
     id: '10',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-9.png',
-    name: 'Lisa Garcia',
-    email: 'lisa.garcia@media.net',
-    country: 'Spain',
-    job: 'Marketing Director',
-    company: 'MediaFlow SA',
+    item: 'Cisco Catalyst 9300',
+    category: 'Router',
+    serialNumber: 'CC9-2023-007',
+    owner: 'Network Admin',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
+    location: 'Network Closet',
   },
   {
     id: '11',
-    avatar:
+    item: 'ThinkPad X1 Carbon',
+    category: 'Laptop',
+    serialNumber: 'TX1-2023-078',
+    owner: 'Alex Thompson',
+    ownerAvatar:
       'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
-    name: 'Robert Wolfkisser',
-    email: 'rob_wolf@gmail.com',
-    country: 'United States',
-    job: 'Engineer',
-    company: 'TechCorp Inc.',
+    location: 'Room A-102',
   },
   {
     id: '12',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
-    name: 'Jill Jailbreaker',
-    email: 'jj@breaker.com',
-    country: 'Canada',
-    job: 'Engineer',
-    company: 'SecureTech Ltd.',
+    item: 'LG UltraWide 34"',
+    category: 'Monitor',
+    serialNumber: 'LUW-2023-034',
+    owner: 'Design Team',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-4.png',
+    location: 'Design Studio',
   },
   {
     id: '13',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
-    name: 'Henry Silkeater',
-    email: 'henry@silkeater.io',
-    country: 'United Kingdom',
-    job: 'Designer',
-    company: 'Creative Solutions',
+    item: 'Surface Studio 2+',
+    category: 'Desktop',
+    serialNumber: 'SS2-2023-019',
+    owner: 'Creative Director',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-6.png',
+    location: 'Room C-305',
   },
   {
     id: '14',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
-    name: 'Bill Horsefighter',
-    email: 'bhorsefighter@gmail.com',
-    country: 'Australia',
-    job: 'Designer',
-    company: 'Design Studios',
+    item: 'Mechanical Keyboard',
+    category: 'Keyboard',
+    serialNumber: 'MK-2023-156',
+    owner: 'Developer Team',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png',
+    location: 'Dev Room',
   },
   {
     id: '15',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
-    name: 'Jeremy Footviewer',
-    email: 'jeremy@foot.dev',
-    country: 'Germany',
-    job: 'Manager',
-    company: 'ManagePro GmbH',
+    item: 'Epson EcoTank L3250',
+    category: 'Printer',
+    serialNumber: 'EET-2023-091',
+    owner: 'Marketing Team',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-9.png',
+    location: 'Room B-210',
   },
   {
     id: '16',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-4.png',
-    name: 'Sarah Johnson',
-    email: 'sarah.j@techmail.com',
-    country: 'France',
-    job: 'Developer',
-    company: 'CodeCraft SARL',
+    item: 'Samsung Galaxy Tab S9',
+    category: 'Tablet',
+    serialNumber: 'SGT-2023-123',
+    owner: 'Sales Manager',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
+    location: 'Room A-108',
   },
   {
     id: '17',
-    avatar:
+    item: 'MacBook Air M2',
+    category: 'Laptop',
+    serialNumber: 'MBA-2023-045',
+    owner: 'Project Manager',
+    ownerAvatar:
       'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-5.png',
-    name: 'Michael Brown',
-    email: 'mbrown@enterprise.org',
-    country: 'Japan',
-    job: 'Analyst',
-    company: 'DataFlow Corp',
+    location: 'Room B-207',
   },
   {
     id: '18',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-6.png',
-    name: 'Emma Wilson',
-    email: 'emma.wilson@startup.io',
-    country: 'Netherlands',
-    job: 'Product Manager',
-    company: 'InnovateTech BV',
+    item: 'ASUS ProArt Display',
+    category: 'Monitor',
+    serialNumber: 'APD-2023-067',
+    owner: 'Video Editor',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
+    location: 'Media Room',
   },
   {
     id: '19',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png',
-    name: 'David Lee',
-    email: 'dlee@consulting.com',
-    country: 'South Korea',
-    job: 'Consultant',
-    company: 'Strategic Solutions',
+    item: 'Google Pixel 7 Pro',
+    category: 'Phone',
+    serialNumber: 'GP7-2023-089',
+    owner: 'QA Engineer',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
+    location: 'Room C-302',
   },
   {
     id: '20',
-    avatar:
-      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-9.png',
-    name: 'Lisa Garcia',
-    email: 'lisa.garcia@media.net',
-    country: 'Spain',
-    job: 'Marketing Director',
-    company: 'MediaFlow SA',
+    item: 'Netgear Nighthawk AX12',
+    category: 'Router',
+    serialNumber: 'NNA-2023-012',
+    owner: 'IT Support',
+    ownerAvatar:
+      'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
+    location: 'Conference Room',
   },
 ];
 
 export function InventoryPage() {
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
-  const [sortedData, setSortedData] = useState(data);
-  const [sortBy, setSortBy] = useState<keyof RowData | null>(null);
+  const [sortedData, setSortedData] = useState(inventoryData);
+  const [sortBy, setSortBy] = useState<keyof InventoryItem | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
   const [selection, setSelection] = useState<string[]>([]);
 
-  const setSorting = (field: keyof RowData) => {
+  const setSorting = (field: keyof InventoryItem) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
     setReverseSortDirection(reversed);
     setSortBy(field);
-    setSortedData(sortData(data, { sortBy: field, reversed, search }));
+    setSortedData(sortData(inventoryData, { sortBy: field, reversed, search }));
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.currentTarget;
     setSearch(value);
-    setSortedData(sortData(data, { sortBy, reversed: reverseSortDirection, search: value }));
+    setSortedData(
+      sortData(inventoryData, { sortBy, reversed: reverseSortDirection, search: value })
+    );
   };
 
   const toggleRow = (id: string) =>
@@ -326,27 +356,31 @@ export function InventoryPage() {
           <Checkbox checked={selection.includes(item.id)} onChange={() => toggleRow(item.id)} />
         </Table.Td>
         <Table.Td>
+          <Text size="sm" fw={500}>
+            {item.item}
+          </Text>
+        </Table.Td>
+        <Table.Td>
+          <Badge color={getCategoryColor(item.category)} variant="light" size="sm">
+            {item.category}
+          </Badge>
+        </Table.Td>
+        <Table.Td>
+          <Text size="sm" ff="monospace" c="dimmed">
+            {item.serialNumber}
+          </Text>
+        </Table.Td>
+        <Table.Td>
           <Group gap="sm">
-            <Avatar size={32} src={item.avatar} radius="xl" />
+            <Avatar size={32} src={item.ownerAvatar} radius="xl" />
             <Text size="sm" fw={500}>
-              {item.name}
+              {item.owner}
             </Text>
           </Group>
         </Table.Td>
         <Table.Td>
-          <Text size="sm">{item.email}</Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm">{item.country}</Text>
-        </Table.Td>
-        <Table.Td>
           <Text size="sm" c="blue">
-            {item.job}
-          </Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm" c="dimmed">
-            {item.company}
+            {item.location}
           </Text>
         </Table.Td>
       </Table.Tr>
@@ -358,10 +392,10 @@ export function InventoryPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-6">
           <Text size="xl" fw={700} mb="md">
-            Team Members
+            IT Inventory
           </Text>
           <TextInput
-            placeholder="IconSearch by name, email, country, job, or company..."
+            placeholder="Search by item, category, serial number, owner, or location..."
             mb="md"
             leftSection={<IconSearch size={16} />}
             value={search}
@@ -370,7 +404,7 @@ export function InventoryPage() {
           />
           {selection.length > 0 && (
             <Text size="sm" c="blue" mb="md">
-              {selection.length} member{selection.length !== 1 ? 's' : ''} selected
+              {selection.length} item{selection.length !== 1 ? 's' : ''} selected
             </Text>
           )}
         </div>
@@ -387,39 +421,39 @@ export function InventoryPage() {
                   />
                 </Table.Th>
                 <Th
-                  sorted={sortBy === 'name'}
+                  sorted={sortBy === 'item'}
                   reversed={reverseSortDirection}
-                  onSort={() => setSorting('name')}
+                  onSort={() => setSorting('item')}
                 >
-                  User
+                  Item
                 </Th>
                 <Th
-                  sorted={sortBy === 'email'}
+                  sorted={sortBy === 'category'}
                   reversed={reverseSortDirection}
-                  onSort={() => setSorting('email')}
+                  onSort={() => setSorting('category')}
                 >
-                  Email
+                  Category
                 </Th>
                 <Th
-                  sorted={sortBy === 'country'}
+                  sorted={sortBy === 'serialNumber'}
                   reversed={reverseSortDirection}
-                  onSort={() => setSorting('country')}
+                  onSort={() => setSorting('serialNumber')}
                 >
-                  Country
+                  Serial Number
                 </Th>
                 <Th
-                  sorted={sortBy === 'job'}
+                  sorted={sortBy === 'owner'}
                   reversed={reverseSortDirection}
-                  onSort={() => setSorting('job')}
+                  onSort={() => setSorting('owner')}
                 >
-                  Job
+                  Owner
                 </Th>
                 <Th
-                  sorted={sortBy === 'company'}
+                  sorted={sortBy === 'location'}
                   reversed={reverseSortDirection}
-                  onSort={() => setSorting('company')}
+                  onSort={() => setSorting('location')}
                 >
-                  Company
+                  Location
                 </Th>
               </Table.Tr>
             </Table.Thead>
@@ -430,7 +464,7 @@ export function InventoryPage() {
                 <Table.Tr>
                   <Table.Td colSpan={6}>
                     <Text fw={500} ta="center" py="xl" c="dimmed">
-                      No results found
+                      No items found
                     </Text>
                   </Table.Td>
                 </Table.Tr>
