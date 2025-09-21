@@ -1,12 +1,25 @@
 import { useState } from 'react';
-import { IconChevronDown, IconChevronUp, IconSearch, IconSelector } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconDots,
+  IconMessages,
+  IconNote,
+  IconPencil,
+  IconReportAnalytics,
+  IconSearch,
+  IconSelector,
+  IconTrash,
+} from '@tabler/icons-react';
 import cx from 'clsx';
 import {
+  ActionIcon,
   Avatar,
   Badge,
   Center,
   Checkbox,
   Group,
+  Menu,
   ScrollArea,
   Table,
   Text,
@@ -383,6 +396,40 @@ export function InventoryPage() {
             {item.location}
           </Text>
         </Table.Td>
+        <Table.Td>
+          <Group gap={0} justify="flex-end">
+            <ActionIcon variant="subtle" color="gray">
+              <IconPencil size={16} stroke={1.5} />
+            </ActionIcon>
+            <ActionIcon variant="subtle" color="red">
+              <IconTrash size={16} stroke={1.5} />
+            </ActionIcon>
+            <Menu
+              transitionProps={{ transition: 'pop' }}
+              withArrow
+              position="bottom-end"
+              withinPortal
+            >
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray">
+                  <IconDots size={16} stroke={1.5} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<IconMessages size={16} stroke={1.5} />}>
+                  Send message
+                </Menu.Item>
+                <Menu.Item leftSection={<IconNote size={16} stroke={1.5} />}>Add note</Menu.Item>
+                <Menu.Item leftSection={<IconReportAnalytics size={16} stroke={1.5} />}>
+                  Analytics
+                </Menu.Item>
+                <Menu.Item leftSection={<IconTrash size={16} stroke={1.5} />} color="red">
+                  Terminate contract
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+        </Table.Td>
       </Table.Tr>
     );
   });
@@ -392,7 +439,7 @@ export function InventoryPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-6">
           <Text size="xl" fw={700} mb="md">
-            IT Inventory
+            Global Inventory
           </Text>
           <TextInput
             placeholder="Search by item, category, serial number, owner, or location..."

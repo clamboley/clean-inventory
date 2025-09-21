@@ -1,7 +1,7 @@
-import { AppShell } from '@mantine/core';
-import { Navbar } from './Navbar';
-import { Header } from './Header';
 import { useState } from 'react';
+import { AppShell, Grid } from '@mantine/core';
+import { Header } from './Header';
+import { Navbar } from './Navbar';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -20,7 +20,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
       </AppShell.Navbar>
 
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        <Grid>
+          <Grid.Col span={0.5}></Grid.Col>
+          <Grid.Col span={11}>{children}</Grid.Col>
+          <Grid.Col span={0.5}></Grid.Col>
+        </Grid>
+      </AppShell.Main>
     </AppShell>
   );
 }

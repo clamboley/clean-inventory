@@ -29,7 +29,11 @@ export function Navbar({ collapsed, setCollapsed }: NavbarProps) {
         <NavItem
           collapsed={collapsed}
           label="Dashboard"
-          icon={<Indicator size={14} inline label="2"><IconGauge size={20} stroke={1.5} /></Indicator>}
+          icon={
+            <Indicator size={14} inline label="2">
+              <IconGauge size={20} stroke={1.5} />
+            </Indicator>
+          }
           to="/dashboard"
         />
 
