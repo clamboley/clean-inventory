@@ -292,6 +292,7 @@ export function InventoryPage() {
                   >
                     Location
                   </Th>
+                  <Table.Th></Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
