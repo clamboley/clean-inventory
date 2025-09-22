@@ -156,14 +156,13 @@ EMAIL_DOMAINS = [
     "local.dev",
 ]
 
-ROLES = ["user", "admin"]
+ROLES = ["USER", "ADMIN"]
 
 
 def generate_fake_user() -> dict[str, str]:
     """Generate a fake user with random data."""
     first_name = random.choice(FIRST_NAMES)
     last_name = random.choice(LAST_NAMES)
-    full_name = f"{first_name} {last_name}"
 
     # Create email from name
     email_prefix = f"{first_name.lower()}.{last_name.lower()}"
@@ -175,7 +174,7 @@ def generate_fake_user() -> dict[str, str]:
 
     role = random.choice(ROLES)
 
-    return {"name": full_name, "email": email, "role": role}
+    return {"first_name": first_name, "last_name": last_name, "email": email, "role": role}
 
 
 def send_user_request(user_data: dict[str, str]) -> requests.Response:
@@ -207,7 +206,7 @@ def create_fake_users(count: int, delay: float = 0.1) -> None:
     for i in range(count):
         user_data = generate_fake_user()
 
-        logger.info(f"[{i + 1}/{count}] Creating user: {user_data['name']} ({user_data['email']})")
+        logger.info(f"[{i + 1}/{count}] Creating user: {user_data['email']}")
 
         response = send_user_request(user_data)
 
@@ -409,13 +408,15 @@ def generate_fake_item(users: list[dict]) -> dict[str, str] | None:
 
     # Select random owner
     owner = random.choice(users)
-    owner_id = owner["id"]
+    owner_email = owner["email"]
 
     return {
         "name": name,
         "category": category,
-        "serial_number": generate_serial_number(),
-        "owner_id": owner_id,
+        "serial_number_1": generate_serial_number(),
+        "serial_number_2": generate_serial_number() if random.random() < 0.3 else None,  # noqa: PLR2004
+        "serial_number_3": generate_serial_number() if random.random() < 0.1 else None,  # noqa: PLR2004
+        "owner": owner_email,
         "location": generate_location(),
     }
 
@@ -460,13 +461,7 @@ def create_fake_items(count: int, delay: float = 0.1) -> None:
             failed += 1
             continue
 
-        # Find owner name for display
-        owner_name = next((u["name"] for u in users if u["id"] == item_data["owner_id"]), "Unknown")
-
-        logger.info(
-            f"[{i + 1}/{count}] Creating: {item_data['name']}"
-            f" ({item_data['serial_number']}) -> {owner_name}",
-        )
+        logger.info(f"[{i + 1}/{count}] Creating: {item_data['name']}")
 
         response = send_item_request(item_data)
 
@@ -533,7 +528,7 @@ def flush_database(delay: float = 0.1) -> None:
     users = get_existing_users()
     items = get_existing_items()
 
-    user_ids = [user["id"] for user in users]
+    user_emails = [user["email"] for user in users]
     item_ids = [item["id"] for item in items]
 
     items_cnt, users_cnt = 0, 0
@@ -550,14 +545,14 @@ def flush_database(delay: float = 0.1) -> None:
             time.sleep(delay)
 
     url = f"{BASE_URL}{USERS_ENDPOINT}"
-    for user_id in user_ids:
-        response = requests.delete(f"{url}/{user_id}", timeout=10)
+    for i, user_email in enumerate(user_emails):
+        response = requests.delete(f"{url}/{user_email}", timeout=10)
         if response.status_code not in [200, 204]:
-            logger.error(f"Failed to delete user {user_id}")
+            logger.error(f"Failed to delete user {user_email}")
         else:
             users_cnt += 1
 
-        if delay > 0 and i < len(user_ids) - 1:
+        if delay > 0 and i < len(user_emails) - 1:
             time.sleep(delay)
 
     logger.info(f"Deleted {users_cnt} users and {items_cnt} items")

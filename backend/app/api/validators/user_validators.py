@@ -1,46 +1,29 @@
-from uuid import UUID
-
 from pydantic import BaseModel, EmailStr
+
+from app.business.entities.user_entity import UserRole
 
 
 class UserCreateRequest(BaseModel):
-    """Request model for creating a user.
+    """Request model for creating a user."""
 
-    Attributes:
-        name: The name of the user.
-        email: The email address of the user.
-        password: The password of the user.
-        role: The role of the user.
-    """
-
-    name: str
     email: EmailStr
+    first_name: str
+    last_name: str
     password: str | None = None
-    role: str = "user"
+    role: UserRole = UserRole.USER
 
 
 class UserResponse(BaseModel):
-    """Response model for a user.
+    """Response model for a user."""
 
-    Attributes:
-        id: The UUID of the user.
-        name: The name of the user.
-        email: The email address of the user.
-        role: The role of the user.
-    """
-
-    id: UUID
-    name: str
     email: EmailStr
-    role: str = "user"
+    first_name: str
+    last_name: str
+    role: UserRole
 
 
 class UsersListResponse(BaseModel):
-    """Response model for a list of users.
-
-    Attributes:
-        users: A list of UserResponse objects.
-    """
+    """Response model for a list of users."""
 
     users: list[UserResponse]
 
@@ -48,8 +31,9 @@ class UsersListResponse(BaseModel):
 class UserWithPasswordResponse(UserResponse):
     """Response model for a user with a generated password.
 
-    Attributes:
-        raw_password: The generated password of the user.
+    When an admin creates a user, the password is generated and returned in the
+    response to be sent to the user. The password is not stored in the database,
+    but is instead hashed and stored in the hashed_password field.
     """
 
     raw_password: str

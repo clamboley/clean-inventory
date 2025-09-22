@@ -24,14 +24,7 @@ item_router = APIRouter(prefix="/items", tags=["Items"])
     description="Return all items in the database",
 )
 async def list_items(request: Request) -> ItemsListResponse:
-    """Retrieve a list of all items from the database.
-
-    Args:
-        request: The FastAPI request object.
-
-    Returns:
-        An ItemsListResponse object containing a list of ItemResponse objects.
-    """
+    """Retrieve a list of all items from the database."""
     service: ItemService = request.app.state.item_service
     items = await service.list_items()
     api_items = [ItemResponse.model_validate(vars(item)) for item in items]
@@ -44,18 +37,7 @@ async def list_items(request: Request) -> ItemsListResponse:
     description="Retrieve an item by its unique ID",
 )
 async def get_item(item_id: UUID, request: Request) -> ItemResponse:
-    """Retrieve a single item by its ID.
-
-    Args:
-        item_id: The UUID of the item to retrieve.
-        request: The FastAPI request object.
-
-    Returns:
-        An ItemResponse object.
-
-    Raises:
-        HTTPException: If the item with the specified ID is not found.
-    """
+    """Retrieve a single item by its ID."""
     service: ItemService = request.app.state.item_service
     try:
         item = await service.get_item(item_id)
@@ -71,15 +53,7 @@ async def get_item(item_id: UUID, request: Request) -> ItemResponse:
     status_code=HTTPStatus.CREATED,
 )
 async def create_item(req: ItemCreateRequest, request: Request) -> ItemResponse:
-    """Create a new item in the database.
-
-    Args:
-        req: The ItemCreateRequest object containing the item data.
-        request: The FastAPI request object.
-
-    Returns:
-        An ItemResponse object representing the created item.
-    """
+    """Create a new item in the database."""
     service: ItemService = request.app.state.item_service
     item = await service.create_item(**req.model_dump())
     return ItemResponse.model_validate(vars(item))
@@ -91,19 +65,7 @@ async def create_item(req: ItemCreateRequest, request: Request) -> ItemResponse:
     description="Update fields of an existing item",
 )
 async def update_item(item_id: UUID, req: ItemUpdateRequest, request: Request) -> ItemResponse:
-    """Update an existing item in the database.
-
-    Args:
-        item_id: The UUID of the item to update.
-        req: The ItemUpdateRequest object containing the fields to update.
-        request: The FastAPI request object.
-
-    Returns:
-        An ItemResponse object representing the updated item.
-
-    Raises:
-        HTTPException: If the item with the specified ID is not found.
-    """
+    """Update an existing item in the database."""
     service: ItemService = request.app.state.item_service
     try:
         item = await service.update_item(item_id, req.model_dump(exclude_unset=True))
@@ -119,15 +81,7 @@ async def update_item(item_id: UUID, req: ItemUpdateRequest, request: Request) -
     status_code=HTTPStatus.NO_CONTENT,
 )
 async def delete_item(item_id: UUID, request: Request) -> None:
-    """Delete an item from the database.
-
-    Args:
-        item_id: The UUID of the item to delete.
-        request: The FastAPI request object.
-
-    Raises:
-        HTTPException: If the item with the specified ID is not found.
-    """
+    """Delete an item from the database."""
     service: ItemService = request.app.state.item_service
     try:
         await service.delete_item(item_id)

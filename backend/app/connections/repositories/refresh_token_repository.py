@@ -16,26 +16,18 @@ if TYPE_CHECKING:
 
 
 class RefreshTokenRepository:
-    """Repository for refresh token persistence and lookups.
-
-    Attributes:
-        session: The session maker used to create database sessions.
-    """
+    """Repository for refresh token persistence and lookups."""
 
     session: sessionmaker[AsyncSession]
 
     def __init__(self, session_local: sessionmaker[AsyncSession]) -> None:
-        """Initializes the RefreshTokenRepository with a session maker.
-
-        Args:
-            session_local: The session maker used to create database sessions.
-        """
+        """Initializes the RefreshTokenRepository with a session maker."""
         self.session = session_local
 
     async def create(
         self,
         token_hash: str,
-        user_id: UUID,
+        user_email: str,
         expires_at: datetime,
         replaced_by: UUID | None = None,
     ) -> RefreshTokenModel:
@@ -43,7 +35,7 @@ class RefreshTokenRepository:
 
         Args:
             token_hash: The hashed value of the refresh token.
-            user_id: The ID of the user associated with the refresh token.
+            user_email: The email of the user associated with the refresh token.
             expires_at: The timestamp when the refresh token expires.
             replaced_by: The ID of the refresh token that replaced this one, if any.
 
@@ -53,7 +45,7 @@ class RefreshTokenRepository:
         async with self.session() as session:
             model = RefreshTokenModel(
                 token_hash=token_hash,
-                user_id=user_id,
+                user_email=user_email,
                 issued_at=get_current_time(),
                 expires_at=expires_at,
                 revoked=False,
@@ -65,15 +57,7 @@ class RefreshTokenRepository:
             return model
 
     async def get_by_hash(self, token_hash: str) -> RefreshTokenModel | None:
-        """Retrieves a refresh token by its hashed value.
-
-        Args:
-            token_hash: The hashed value of the refresh token to retrieve.
-
-        Returns:
-            The RefreshTokenModel object corresponding to the refresh token,
-            or None if the refresh token is not found.
-        """
+        """Retrieves a refresh token by its hashed value."""
         async with self.session() as session:
             result = await session.execute(
                 select(RefreshTokenModel).where(RefreshTokenModel.token_hash == token_hash),
@@ -95,16 +79,12 @@ class RefreshTokenRepository:
             )
             await session.commit()
 
-    async def revoke_by_user(self, user_id: UUID) -> None:
-        """Revoke all refresh tokens for a user (useful for logout-all).
-
-        Args:
-            user_id: The ID of the user whose refresh tokens should be revoked.
-        """
+    async def revoke_by_user(self, user_email: str) -> None:
+        """Revoke all refresh tokens for a user (useful for logout-all)."""
         async with self.session() as session:
             await session.execute(
                 update(RefreshTokenModel)
-                .where(RefreshTokenModel.user_id == user_id)
+                .where(RefreshTokenModel.user_email == user_email)
                 .values(revoked=True),
             )
             await session.commit()

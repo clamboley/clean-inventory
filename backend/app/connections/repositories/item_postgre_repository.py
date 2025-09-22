@@ -10,41 +10,27 @@ from app.exceptions.item_exceptions import ItemNotFoundError
 
 
 class ItemPostgreRepository:
-    """Repository class for handling Item entities in PostgreSQL database."""
+    """Repository for Item entities.
+
+    This class provides methods to interact with the database for Item entities.
+    It handles the conversion between ItemEntity and ItemModel objects.
+    """
 
     session: sessionmaker[AsyncSession]
 
     def __init__(self, session_local: sessionmaker[AsyncSession]) -> None:
-        """Initialize the repository with a sessionmaker.
-
-        Args:
-            session_local: A sessionmaker instance for creating async sessions.
-        """
+        """Initializes the ItemPostgreRepository with a session factory."""
         self.session = session_local
 
     async def list_items(self) -> list[ItemEntity]:
-        """Retrieve a list of all Item entities from the database.
-
-        Returns:
-            A list of ItemEntity objects.
-        """
+        """Retrieves all items from the database."""
         async with self.session() as session:
             result = await session.execute(select(ItemModel))
             rows = result.scalars().all()
             return [self._to_entity(row) for row in rows]
 
     async def get(self, item_id: UUID) -> ItemEntity:
-        """Retrieve a single Item entity by its ID.
-
-        Args:
-            item_id: The UUID of the item to retrieve.
-
-        Returns:
-            An ItemEntity object.
-
-        Raises:
-            ItemNotFoundError: If the item with the specified ID is not found.
-        """
+        """Retrieves an item by its ID."""
         async with self.session() as session:
             model = await session.get(ItemModel, item_id)
             if not model:
@@ -52,14 +38,7 @@ class ItemPostgreRepository:
             return self._to_entity(model)
 
     async def create(self, item: ItemEntity) -> ItemEntity:
-        """Create a new Item entity in the database.
-
-        Args:
-            item: The ItemEntity object to create.
-
-        Returns:
-            The created ItemEntity object.
-        """
+        """Creates a new item in the database."""
         async with self.session() as session:
             model = ItemModel(**vars(item))
             session.add(model)
@@ -68,18 +47,7 @@ class ItemPostgreRepository:
             return self._to_entity(model)
 
     async def update(self, item_id: UUID, updates: dict) -> ItemEntity:
-        """Update an existing Item entity in the database.
-
-        Args:
-            item_id: The UUID of the item to update.
-            updates: A dictionary of field-value pairs to update.
-
-        Returns:
-            The updated ItemEntity object.
-
-        Raises:
-            ItemNotFoundError: If the item with the specified ID is not found.
-        """
+        """Updates an item in the database."""
         async with self.session() as session:
             result = await session.execute(
                 update(ItemModel)
@@ -94,14 +62,7 @@ class ItemPostgreRepository:
             return self._to_entity(model)
 
     async def delete(self, item_id: UUID) -> None:
-        """Delete an Item entity from the database.
-
-        Args:
-            item_id: The UUID of the item to delete.
-
-        Raises:
-            ItemNotFoundError: If the item with the specified ID is not found.
-        """
+        """Deletes an item from the database."""
         async with self.session() as session:
             model = await session.get(ItemModel, item_id)
             if not model:
@@ -110,24 +71,16 @@ class ItemPostgreRepository:
             await session.commit()
 
     def _to_entity(self, model: ItemModel) -> ItemEntity:
-        """Convert a SQLAlchemy model to an ItemEntity object.
-
-        Args:
-            model: The SQLAlchemy model to convert.
-
-        Returns:
-            An ItemEntity object.
-        """
+        """Converts an ItemModel object to an ItemEntity object."""
         return ItemEntity(
             id=model.id,
             name=model.name,
             category=model.category,
-            serial_number=model.serial_number,
-            extra=model.extra,
-            owner_id=model.owner_id,
+            serial_number_1=model.serial_number_1,
+            serial_number_2=model.serial_number_2,
+            serial_number_3=model.serial_number_3,
+            owner=model.owner,
             location=model.location,
             status=model.status,
             created_at=model.created_at,
-            updated_at=model.updated_at,
-            version=model.version,
         )
