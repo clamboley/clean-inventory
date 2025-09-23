@@ -2,9 +2,10 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 
 from app.api.validators.item_validators import (
+    ImportItemsResponse,
     ItemCreateRequest,
     ItemResponse,
     ItemsListResponse,
@@ -87,3 +88,19 @@ async def delete_item(item_id: UUID, request: Request) -> None:
         await service.delete_item(item_id)
     except ItemNotFoundError as e:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
+
+
+@item_router.post(
+    "/import",
+    summary="Import items from file",
+    description="Upload a CSV or Excel (.xls/.xlsx) file that contains items to create.",
+    status_code=HTTPStatus.CREATED,
+)
+async def import_items(file: UploadFile, request: Request) -> ImportItemsResponse:
+    """Accepts a multipart file (CSV/XLS/XLSX), validates rows and creates items."""
+    service: ItemService = request.app.state.item_service
+    contents = await file.read()
+    created_entities, errors = await service.import_items_from_file(file.filename, contents)
+
+    created_api = [ItemResponse.model_validate(vars(item)) for item in created_entities]
+    return ImportItemsResponse(created=created_api, errors=errors)
