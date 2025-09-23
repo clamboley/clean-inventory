@@ -48,3 +48,17 @@ class ItemsListResponse(BaseModel):
     """Response model for a list of items."""
 
     items: list[ItemResponse]
+
+
+class ImportItemError(BaseModel):
+    """Describes an error that happened when importing a row."""
+
+    row: int
+    error: str
+
+
+class ImportItemsResponse(BaseModel):
+    """Response for file import endpoint."""
+
+    created: list[ItemResponse]
+    errors: list[ImportItemError]
