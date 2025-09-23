@@ -2,7 +2,7 @@
 import { IconTableImport, IconUpload, IconX } from '@tabler/icons-react';
 import { Group, Text } from '@mantine/core';
 import { Dropzone, DropzoneProps } from '@mantine/dropzone';
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { AppLayout } from '../../components/layout/AppLayout';
 
 const CSV_LIKE_TYPE = [
@@ -27,7 +27,7 @@ function UploadExample(props: Partial<DropzoneProps>) {
 
       if (!resp.ok) {
         const text = await resp.text();
-        showNotification({
+        notifications.show({
           title: 'Upload failed',
           message: `Server error: ${resp.status} ${text}`,
           color: 'red',
@@ -39,7 +39,7 @@ function UploadExample(props: Partial<DropzoneProps>) {
       const createdCount = data.created?.length ?? 0;
       const errorCount = data.errors?.length ?? 0;
 
-      showNotification({
+      notifications.show({
         title: 'Import complete',
         message: `${createdCount} items created, ${errorCount} rows had errors.`,
         color: errorCount > 0 ? 'yellow' : 'green',
@@ -49,7 +49,7 @@ function UploadExample(props: Partial<DropzoneProps>) {
       console.log('Import result:', data);
     } catch (err) {
       console.error('Import failed', err);
-      showNotification({
+      notifications.show({
         title: 'Upload error',
         message: String(err),
         color: 'red',
@@ -62,7 +62,7 @@ function UploadExample(props: Partial<DropzoneProps>) {
       onDrop={(files) => handleUpload(files)}
       onReject={(files) => {
         console.log('rejected files', files);
-        showNotification({
+        notifications.show({
           title: 'Rejected file',
           message: 'Unsupported file type or too large',
           color: 'red',
