@@ -21,3 +21,18 @@ export interface InventoryItem {
   ownerInitials: string | null;
   location: string | null;
 }
+
+export interface ImportResult {
+  created: ItemResponse[];
+  errors: { row: number; message: string }[];
+}
+
+export interface ImportItemError {
+  row: number;
+  error: string;
+}
+
+export interface ImportItemsResponse {
+  created: ItemResponse[];
+  errors: ImportItemError[];
+}
