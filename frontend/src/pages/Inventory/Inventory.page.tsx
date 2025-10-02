@@ -6,6 +6,7 @@ import {
   IconMessages,
   IconNote,
   IconPencil,
+  IconPlus,
   IconReportAnalytics,
   IconSearch,
   IconSelector,
@@ -16,6 +17,7 @@ import {
   ActionIcon,
   Avatar,
   Badge,
+  Button,
   Center,
   Checkbox,
   Group,
@@ -27,9 +29,12 @@ import {
   TextInput,
   UnstyledButton,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { AddItemDrawer } from '../../components/common/AddItemDrawer';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useInventory } from '../../hooks/useInventory';
-import { InventoryItem } from '../../types/item';
+import { createItem, CreateItemRequest } from '../../services/items.service';
+import { InventoryItem, ItemResponse } from '../../types/item';
 import classes from './TableScrollArea.module.css';
 
 interface ThProps {
@@ -86,6 +91,26 @@ function sortData(
   );
 }
 
+function mapItemResponseToInventory(item: ItemResponse): InventoryItem {
+  const ownerName = item.owner_id ?? '';
+  const initials = ownerName
+    .split('@')[0]
+    .split('.')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
+  return {
+    id: item.id,
+    item: item.name,
+    category: item.category,
+    serialNumber: item.serial_number,
+    owner: ownerName,
+    ownerInitials: initials,
+    location: item.location,
+  };
+}
+
 const getCategoryColor = (category: string) => {
   switch (category?.toLowerCase()) {
     case 'laptop':
@@ -121,7 +146,21 @@ export function InventoryPage() {
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
   const [selection, setSelection] = useState<string[]>([]);
 
-  const sortedData = sortData(items, { sortBy, reversed: reverseSortDirection, search });
+  const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [localItems, setLocalItems] = useState<InventoryItem[]>([]);
+
+  const handleAddItem = async (payload: CreateItemRequest) => {
+    try {
+      const response = await createItem(payload);
+      const newItem = mapItemResponseToInventory(response);
+      setLocalItems((prev) => [...prev, newItem]);
+    } catch (err) {
+      console.error('Failed to create item:', err);
+    }
+  };
+
+  const allItems = [...items, ...localItems];
+  const sortedData = sortData(allItems, { sortBy, reversed: reverseSortDirection, search });
 
   const setSorting = (field: keyof InventoryItem) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
@@ -166,7 +205,9 @@ export function InventoryPage() {
         </Table.Td>
         <Table.Td>
           <Group gap="sm">
-            <Avatar size={32} radius="xl">{item.ownerInitials}</Avatar>
+            <Avatar size={32} radius="xl">
+              {item.ownerInitials}
+            </Avatar>
             <Text size="sm" fw={500}>
               {item.owner}
             </Text>
@@ -222,14 +263,20 @@ export function InventoryPage() {
           <Text size="xl" fw={700} mb="md">
             Global Inventory
           </Text>
-          <TextInput
-            placeholder="Search by item, category, serial number, owner, or location..."
-            mb="md"
-            leftSection={<IconSearch size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            className="max-w-md"
-          />
+          <Group justify="space-between">
+            <TextInput
+              placeholder="Search by item, category, serial number, owner, or location..."
+              mb="md"
+              leftSection={<IconSearch size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              className="max-w-md"
+              style={{ flexGrow: 1 }}
+            />
+            <Button mb="md" leftSection={<IconPlus size={16} />} onClick={openDrawer}>
+              Add Item
+            </Button>
+          </Group>
           {selection.length > 0 && (
             <Text size="sm" c="blue" mb="md">
               {selection.length} item{selection.length !== 1 ? 's' : ''} selected
@@ -312,6 +359,9 @@ export function InventoryPage() {
           </ScrollArea>
         )}
       </div>
+
+      {/* Drawer for adding an item */}
+      <AddItemDrawer opened={drawerOpened} onClose={closeDrawer} onSubmit={handleAddItem} />
     </AppLayout>
   );
 }
