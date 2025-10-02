@@ -15,3 +15,21 @@ export async function uploadItems(file: File): Promise<ImportItemsResponse> {
     body: fd,
   });
 }
+
+export interface CreateItemRequest {
+  name: string;
+  category: string;
+  serial_number_1: string;
+  serial_number_2?: string | null;
+  serial_number_3?: string | null;
+  owner: string; // email
+  location: string;
+}
+
+export async function createItem(payload: CreateItemRequest): Promise<ItemResponse> {
+  return apiFetch<ItemResponse>('/items', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
