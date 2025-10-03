@@ -51,7 +51,7 @@ Designed with a **clean architecture** in mind, with **FastAPI + PostgreSQL back
 
 ```bash
 .
-├── backend/                # FastAPI backend (Clean Architecture)
+├── backend/            # FastAPI backend (Clean Architecture)
 │   ├── app/
 │   │   ├── api/             # API layer
 │   │   │   ├── controllers  # FastAPI routers (auth, items, users)
@@ -64,26 +64,29 @@ Designed with a **clean architecture** in mind, with **FastAPI + PostgreSQL back
 │   │   │   └── repositories # Persistence layer (PostgreSQL repos)
 │   │   ├── core/            # App config, DI container, logging, security
 │   │   ├── exceptions/      # Domain-specific exceptions
-│   │   └── main.py          # FastAPI entrypoint
+│   │   └── main.py
 │   ├── migrations/          # Alembic migrations
-│   ├── pyproject.toml       # Python project config (uv)
-│   └── uv.lock              # Dependency lockfile
+│   ├── pyproject.toml
+│   └── uv.lock
 │
-├── frontend/                # React + Mantine frontend
+├── frontend/            # React + Mantine frontend
 │   ├── src/
+│   │   ├── api              # API client
 │   │   ├── components/      # Reusable UI components (layout, common widgets)
-│   │   ├── hooks/           # Custom React hooks
+│   │   ├── contexts/        # Global state management
+│   │   ├── hooks/           # Custom stateful logic
+│   │   ├── models/          # Type models & interface definitions
 │   │   ├── pages/           # Application pages (Inventory, Dashboard, etc.)
-│   │   ├── services/        # API client & business logic
-│   │   ├── types/           # Shared TypeScript types
-│   │   ├── App.tsx          # Root React component
-│   │   ├── Router.tsx       # App routing
-│   │   └── theme.ts         # Mantine theme configuration
-│   ├── package.json         # Frontend dependencies
-│   ├── vite.config.mjs      # Vite config
-│   └── yarn.lock            # Dependency lockfile
+│   │   ├── services/        # General business logic and utilities
+│   │   ├── styles/          # Global styles, CSS modules
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── Router.tsx
+│   ├── package.json
+│   ├── vite.config.mjs
+│   └── yarn.lock
 │
-└── README.md                # Global project documentation
+└── README.md
 ```
 
 ## Getting Started
