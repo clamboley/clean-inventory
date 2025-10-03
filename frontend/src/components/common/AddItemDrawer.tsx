@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Button, Drawer, Group, Select, Stack, TextInput } from '@mantine/core';
+import {
+  Button,
+  Divider,
+  Drawer,
+  Grid,
+  Group,
+  Select,
+  Stack,
+  TextInput,
+  Title,
+} from '@mantine/core';
 import { CreateItemRequest } from '../../services/items.service';
 import { fetchUsers } from '../../services/users.service';
 import { UserResponse } from '../../types/user';
@@ -67,14 +77,24 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
     form.location.trim();
 
   return (
-    <Drawer opened={opened} onClose={onClose} title="Add Inventory Item" size="md" padding="xl">
-      <Stack>
+    <Drawer
+      opened={opened}
+      onClose={onClose}
+      title={<Title order={3}>Add Inventory Item</Title>}
+      size="md"
+      padding="xl"
+      overlayProps={{ backgroundOpacity: 0.55, blur: 2 }}
+    >
+      <Stack gap="lg">
+        <Divider label="Item Information" labelPosition="center" />
+
         <TextInput
           label="Item Name"
           placeholder="e.g. Dell XPS 13"
           value={form.name}
           onChange={(e) => updateField('name', e.currentTarget.value)}
           required
+          withAsterisk
         />
 
         <TextInput
@@ -83,38 +103,55 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
           value={form.category}
           onChange={(e) => updateField('category', e.currentTarget.value)}
           required
+          withAsterisk
         />
 
-        <TextInput
-          label="Serial Number 1"
-          placeholder="e.g. SN123456"
-          value={form.serial_number_1}
-          onChange={(e) => updateField('serial_number_1', e.currentTarget.value)}
-          required
-        />
+        <Divider label="Serial Numbers" labelPosition="center" />
 
-        <TextInput
-          label="Serial Number 2"
-          placeholder="Optional"
-          value={form.serial_number_2}
-          onChange={(e) => updateField('serial_number_2', e.currentTarget.value)}
-        />
+        <Grid>
+          <Grid.Col span={12}>
+            <TextInput
+              label="Serial Number 1"
+              placeholder="e.g. SN123456"
+              value={form.serial_number_1}
+              onChange={(e) => updateField('serial_number_1', e.currentTarget.value)}
+              required
+              withAsterisk
+            />
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <TextInput
+              label="Serial Number 2"
+              placeholder="Optional"
+              value={form.serial_number_2}
+              onChange={(e) => updateField('serial_number_2', e.currentTarget.value)}
+            />
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <TextInput
+              label="Serial Number 3"
+              placeholder="Optional"
+              value={form.serial_number_3}
+              onChange={(e) => updateField('serial_number_3', e.currentTarget.value)}
+            />
+          </Grid.Col>
+        </Grid>
 
-        <TextInput
-          label="Serial Number 3"
-          placeholder="Optional"
-          value={form.serial_number_3}
-          onChange={(e) => updateField('serial_number_3', e.currentTarget.value)}
-        />
+        <Divider label="Ownership" labelPosition="center" />
 
         <Select
           label="Owner Email"
           placeholder="Select owner"
-          data={users.map((u) => ({ value: u.email, label: `${u.first_name} ${u.last_name} (${u.email})` }))}
+          data={users.map((u) => ({
+            value: u.email,
+            label: `${u.first_name} ${u.last_name} (${u.email})`,
+          }))}
           value={form.owner}
           onChange={(val) => updateField('owner', val)}
           clearable
+          searchable
           required
+          withAsterisk
         />
 
         <TextInput
@@ -123,13 +160,16 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
           value={form.location}
           onChange={(e) => updateField('location', e.currentTarget.value)}
           required
+          withAsterisk
         />
+
+        <Divider />
 
         <Group justify="flex-end" mt="md">
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!isValid}>
+          <Button onClick={handleSubmit} disabled={!isValid} color="blue">
             Add Item
           </Button>
         </Group>

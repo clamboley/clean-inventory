@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  IconCheck,
   IconChevronDown,
   IconChevronUp,
   IconDots,
@@ -11,6 +12,7 @@ import {
   IconSearch,
   IconSelector,
   IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import cx from 'clsx';
 import {
@@ -30,6 +32,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { AddItemDrawer } from '../../components/common/AddItemDrawer';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useInventory } from '../../hooks/useInventory';
@@ -129,15 +132,29 @@ export function InventoryPage() {
   const [selection, setSelection] = useState<string[]>([]);
 
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
-  const [localItems, setLocalItems] = useState<InventoryItem[]>([]);
 
+  const [localItems, setLocalItems] = useState<InventoryItem[]>([]);
   const handleAddItem = async (payload: CreateItemRequest) => {
     try {
       const response = await createItem(payload);
       const newItem = mapItemResponseToInventory(response);
+
       setLocalItems((prev) => [...prev, newItem]);
+
+      notifications.show({
+        title: 'Item added',
+        message: `${newItem.item} has been added successfully.`,
+        color: 'green',
+        icon: <IconCheck size={16} />,
+      });
     } catch (err) {
       console.error('Failed to create item:', err);
+      notifications.show({
+        title: 'Add failed',
+        message: 'Could not add item. Please try again.',
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
     }
   };
 
