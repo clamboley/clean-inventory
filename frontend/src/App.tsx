@@ -5,6 +5,7 @@ import '@mantine/notifications/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { InventoryProvider } from './contexts/InventoryContext';
+import { UsersProvider } from './contexts/UsersContext';
 import { Router } from './Router';
 import { theme } from './theme';
 
@@ -13,7 +14,9 @@ export default function App() {
     <MantineProvider theme={theme}>
       <Notifications />
       <InventoryProvider>
-        <Router />
+        <UsersProvider>
+          <Router />
+        </UsersProvider>
       </InventoryProvider>
     </MantineProvider>
   );
