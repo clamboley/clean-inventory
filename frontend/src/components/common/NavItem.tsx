@@ -1,4 +1,3 @@
-import { IconChevronRight } from '@tabler/icons-react';
 import { Link, useLocation } from 'react-router-dom';
 import { NavLink, Tooltip } from '@mantine/core';
 
