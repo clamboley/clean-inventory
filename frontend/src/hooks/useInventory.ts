@@ -35,7 +35,6 @@ export function useInventory() {
 
         setItems(mapped);
       } catch (err: any) {
-        console.error(err);
         setError(err.message || 'Failed to load inventory');
       } finally {
         setLoading(false);
