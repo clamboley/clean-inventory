@@ -1,7 +1,8 @@
-// AddItemDrawer.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Drawer, Group, Select, Stack, TextInput } from '@mantine/core';
 import { CreateItemRequest } from '../../services/items.service';
+import { fetchUsers } from '../../services/users.service';
+import { UserResponse } from '../../types/user';
 
 interface AddItemDrawerProps {
   opened: boolean;
@@ -9,47 +10,61 @@ interface AddItemDrawerProps {
   onSubmit: (data: CreateItemRequest) => void;
 }
 
-const categories = [
-  'Laptop',
-  'Desktop',
-  'Monitor',
-  'Keyboard',
-  'Mouse',
-  'Tablet',
-  'Phone',
-  'Printer',
-  'Server',
-  'Router',
-];
-
 export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps) {
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState<string | null>(null);
-  const [serialNumber, setSerialNumber] = useState('');
-  const [owner, setOwner] = useState('');
-  const [location, setLocation] = useState('');
+  const [form, setForm] = useState({
+    name: '',
+    category: '',
+    serial_number_1: '',
+    serial_number_2: '',
+    serial_number_3: '',
+    owner: null as string | null,
+    location: '',
+  });
+
+  const [users, setUsers] = useState<UserResponse[]>([]);
+
+  useEffect(() => {
+    fetchUsers().then(setUsers).catch(console.error);
+  }, []);
+
+  const updateField = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = () => {
-    if (!name || !category || !serialNumber || !owner || !location) return;
+    if (!isValid) return;
 
     const payload: CreateItemRequest = {
-      name,
-      category,
-      serial_number_1: serialNumber,
-      owner,
-      location,
+      name: form.name,
+      category: form.category,
+      serial_number_1: form.serial_number_1,
+      serial_number_2: form.serial_number_2 || null,
+      serial_number_3: form.serial_number_3 || null,
+      owner: form.owner!,
+      location: form.location,
     };
 
     onSubmit(payload);
 
-    // Reset
-    setName('');
-    setCategory(null);
-    setSerialNumber('');
-    setOwner('');
-    setLocation('');
+    // Reset form
+    setForm({
+      name: '',
+      category: '',
+      serial_number_1: '',
+      serial_number_2: '',
+      serial_number_3: '',
+      owner: null,
+      location: '',
+    });
     onClose();
   };
+
+  const isValid =
+    form.name.trim() &&
+    form.category.trim() &&
+    form.serial_number_1.trim() &&
+    form.owner &&
+    form.location.trim();
 
   return (
     <Drawer opened={opened} onClose={onClose} title="Add Inventory Item" size="md" padding="xl">
@@ -57,37 +72,56 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
         <TextInput
           label="Item Name"
           placeholder="e.g. Dell XPS 13"
-          value={name}
-          onChange={(e) => setName(e.currentTarget.value)}
+          value={form.name}
+          onChange={(e) => updateField('name', e.currentTarget.value)}
           required
         />
-        <Select
+
+        <TextInput
           label="Category"
-          placeholder="Select category"
-          data={categories}
-          value={category}
-          onChange={setCategory}
+          placeholder="e.g. Laptop, Monitor, etc."
+          value={form.category}
+          onChange={(e) => updateField('category', e.currentTarget.value)}
           required
         />
+
         <TextInput
-          label="Serial Number"
+          label="Serial Number 1"
           placeholder="e.g. SN123456"
-          value={serialNumber}
-          onChange={(e) => setSerialNumber(e.currentTarget.value)}
+          value={form.serial_number_1}
+          onChange={(e) => updateField('serial_number_1', e.currentTarget.value)}
           required
         />
+
         <TextInput
+          label="Serial Number 2"
+          placeholder="Optional"
+          value={form.serial_number_2}
+          onChange={(e) => updateField('serial_number_2', e.currentTarget.value)}
+        />
+
+        <TextInput
+          label="Serial Number 3"
+          placeholder="Optional"
+          value={form.serial_number_3}
+          onChange={(e) => updateField('serial_number_3', e.currentTarget.value)}
+        />
+
+        <Select
           label="Owner Email"
-          placeholder="e.g. john.doe@example.com"
-          value={owner}
-          onChange={(e) => setOwner(e.currentTarget.value)}
+          placeholder="Select owner"
+          data={users.map((u) => ({ value: u.email, label: `${u.first_name} ${u.last_name} (${u.email})` }))}
+          value={form.owner}
+          onChange={(val) => updateField('owner', val)}
+          clearable
           required
         />
+
         <TextInput
           label="Location"
           placeholder="e.g. London Office"
-          value={location}
-          onChange={(e) => setLocation(e.currentTarget.value)}
+          value={form.location}
+          onChange={(e) => updateField('location', e.currentTarget.value)}
           required
         />
 
@@ -95,7 +129,9 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Add Item</Button>
+          <Button onClick={handleSubmit} disabled={!isValid}>
+            Add Item
+          </Button>
         </Group>
       </Stack>
     </Drawer>
