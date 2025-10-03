@@ -13,7 +13,7 @@ export function useInventory() {
         const backendItems: ItemResponse[] = await fetchItems();
 
         const mapped: InventoryItem[] = backendItems.map((item) => {
-          let ownerInitials: string = item.owner
+          const ownerInitials: string = item.owner
             .split('@')[0]
             .split('.')
             .map((part) => part[0])
@@ -28,7 +28,7 @@ export function useInventory() {
             serialNumber2: item.serial_number_2,
             serialNumber3: item.serial_number_3,
             ownerEmail: item.owner,
-            ownerInitials: ownerInitials,
+            ownerInitials,
             location: item.location,
           };
         });
