@@ -34,7 +34,7 @@ import { AddItemDrawer } from '../../components/common/AddItemDrawer';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useInventory } from '../../hooks/useInventory';
 import { createItem, CreateItemRequest } from '../../services/items.service';
-import { InventoryItem, ItemResponse } from '../../types/item';
+import { InventoryItem, mapItemResponseToInventory } from '../../types/item';
 import classes from './TableScrollArea.module.css';
 
 interface ThProps {
@@ -89,26 +89,6 @@ function sortData(
     }),
     payload.search
   );
-}
-
-function mapItemResponseToInventory(item: ItemResponse): InventoryItem {
-  const ownerName = item.owner_id ?? '';
-  const initials = ownerName
-    .split('@')[0]
-    .split('.')
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
-
-  return {
-    id: item.id,
-    item: item.name,
-    category: item.category,
-    serialNumber: item.serial_number,
-    owner: ownerName,
-    ownerInitials: initials,
-    location: item.location,
-  };
 }
 
 const getCategoryColor = (category: string) => {
@@ -200,7 +180,7 @@ export function InventoryPage() {
         </Table.Td>
         <Table.Td>
           <Text size="sm" ff="monospace" c="dimmed">
-            {item.serialNumber}
+            {item.serialNumber1}
           </Text>
         </Table.Td>
         <Table.Td>
@@ -209,7 +189,7 @@ export function InventoryPage() {
               {item.ownerInitials}
             </Avatar>
             <Text size="sm" fw={500}>
-              {item.owner}
+              {item.ownerEmail}
             </Text>
           </Group>
         </Table.Td>
@@ -319,16 +299,16 @@ export function InventoryPage() {
                     Category
                   </Th>
                   <Th
-                    sorted={sortBy === 'serialNumber'}
+                    sorted={sortBy === 'serialNumber1'}
                     reversed={reverseSortDirection}
-                    onSort={() => setSorting('serialNumber')}
+                    onSort={() => setSorting('serialNumber1')}
                   >
                     Serial Number
                   </Th>
                   <Th
-                    sorted={sortBy === 'owner'}
+                    sorted={sortBy === 'ownerEmail'}
                     reversed={reverseSortDirection}
-                    onSort={() => setSorting('owner')}
+                    onSort={() => setSorting('ownerEmail')}
                   >
                     Owner
                   </Th>

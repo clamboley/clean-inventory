@@ -2,24 +2,46 @@ export interface ItemResponse {
   id: string;
   name: string;
   category: string;
-  serial_number: string | null;
-  owner_id: string | null;
-  location: string | null;
-  extra: Record<string, unknown>;
+  serial_number_1: string;
+  serial_number_2: string | null;
+  serial_number_3: string | null;
+  owner: string;
+  location: string;
   status: string;
   created_at: string;
-  updated_at: string;
-  version: number;
 }
 
 export interface InventoryItem {
   id: string;
   item: string;
   category: string;
-  serialNumber: string | null;
-  owner: string | null;
-  ownerInitials: string | null;
-  location: string | null;
+  serialNumber1: string;
+  serialNumber2: string | null;
+  serialNumber3: string | null;
+  ownerEmail: string;
+  ownerInitials: string;
+  location: string;
+}
+
+export function mapItemResponseToInventory(item: ItemResponse): InventoryItem {
+  const initials = item.owner
+    .split('@')[0]
+    .split('.')
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
+  return {
+    id: item.id,
+    item: item.name,
+    category: item.category,
+    serialNumber1: item.serial_number_1,
+    serialNumber2: item.serial_number_2,
+    serialNumber3: item.serial_number_3,
+    ownerEmail: item.owner,
+    ownerInitials: initials,
+    location: item.location,
+  };
 }
 
 export interface ImportResult {
