@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   Divider,
@@ -10,9 +10,8 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { useUsersContext } from '../../contexts/UsersContext';
 import { CreateItemRequest } from '../../services/items.service';
-import { fetchUsers } from '../../services/users.service';
-import { UserResponse } from '../../models/user';
 
 interface AddItemDrawerProps {
   opened: boolean;
@@ -31,18 +30,16 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
     location: '',
   });
 
-  const [users, setUsers] = useState<UserResponse[]>([]);
-
-  useEffect(() => {
-    fetchUsers().then(setUsers).catch(console.error);
-  }, []);
+  const { users } = useUsersContext();
 
   const updateField = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    if (!isValid) {return;}
+    if (!isValid) {
+      return;
+    }
 
     const payload: CreateItemRequest = {
       name: form.name,
