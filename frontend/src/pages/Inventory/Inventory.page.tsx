@@ -91,31 +91,33 @@ function sortData(
   );
 }
 
-const getCategoryColor = (category: string) => {
-  switch (category?.toLowerCase()) {
-    case 'laptop':
-      return 'blue';
-    case 'desktop':
-      return 'green';
-    case 'monitor':
-      return 'purple';
-    case 'keyboard':
-      return 'orange';
-    case 'mouse':
-      return 'red';
-    case 'tablet':
-      return 'cyan';
-    case 'phone':
-      return 'pink';
-    case 'printer':
-      return 'gray';
-    case 'server':
-      return 'dark';
-    case 'router':
-      return 'indigo';
-    default:
-      return 'gray';
+const colors = [
+  'blue',
+  'green',
+  'purple',
+  'orange',
+  'red',
+  'cyan',
+  'pink',
+  'indigo',
+  'teal',
+  'grape',
+  'yellow',
+  'lime',
+  'violet',
+];
+
+const letterColorMap = new Map<string, string>();
+
+export const getCategoryColor = (category: string): string => {
+  if (!category) return 'gray';
+
+  if (!letterColorMap.has(category)) {
+    const color = colors[letterColorMap.size % colors.length];
+    letterColorMap.set(category, color);
   }
+
+  return letterColorMap.get(category)!;
 };
 
 export function InventoryPage() {
