@@ -33,12 +33,12 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { AddItemDrawer } from '../../components/common/AddItemDrawer';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { useInventory } from '../../hooks/useInventory';
-import { createItem, CreateItemRequest } from '../../services/items.service';
-import { InventoryItem, mapItemResponseToInventory } from '../../types/item';
-import classes from './TableScrollArea.module.css';
+import { AddItemDrawer } from '../components/common/AddItemDrawer';
+import { AppLayout } from '../components/layout/AppLayout';
+import { useInventory } from '../hooks/useInventory';
+import { createItem, CreateItemRequest } from '../services/items.service';
+import { InventoryItem, mapItemResponseToInventory } from '../models/item';
+import classes from '../styles/TableScrollArea.module.css';
 
 interface ThProps {
   children: React.ReactNode;

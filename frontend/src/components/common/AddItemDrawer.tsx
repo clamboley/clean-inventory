@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { CreateItemRequest } from '../../services/items.service';
 import { fetchUsers } from '../../services/users.service';
-import { UserResponse } from '../../types/user';
+import { UserResponse } from '../../models/user';
 
 interface AddItemDrawerProps {
   opened: boolean;

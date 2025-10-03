@@ -1,8 +1,8 @@
 import { notifications } from '@mantine/notifications';
-import { UploadDropzone } from '../../components/common/UploadDropzone';
-import { AppLayout } from '../../components/layout/AppLayout';
-import { uploadItems } from '../../services/items.service';
-import { ImportItemsResponse } from '../../types/item';
+import { UploadDropzone } from '../components/common/UploadDropzone';
+import { AppLayout } from '../components/layout/AppLayout';
+import { uploadItems } from '../services/items.service';
+import { ImportItemsResponse } from '../models/item';
 
 export function DashboardPage() {
   async function handleUpload(file: File) {

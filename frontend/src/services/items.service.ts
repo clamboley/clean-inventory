@@ -1,5 +1,5 @@
-import { ImportItemsResponse, ItemResponse } from '../types/item';
-import { apiFetch } from './api';
+import { ImportItemsResponse, ItemResponse } from '../models/item';
+import { apiFetch } from '../api/client';
 
 export async function fetchItems(): Promise<ItemResponse[]> {
   const data = await apiFetch<{ items: ItemResponse[] }>('/items');
