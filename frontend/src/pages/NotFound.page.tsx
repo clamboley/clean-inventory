@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Group, Text, Title } from '@mantine/core';
-import classes from './NotFoundTitle.module.css';
+import classes from '../styles/NotFoundTitle.module.css';
 
 export function NotFoundPage() {
   const navigate = useNavigate();

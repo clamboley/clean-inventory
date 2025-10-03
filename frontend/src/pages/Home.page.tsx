@@ -1,5 +1,5 @@
 import { Text } from '@mantine/core';
-import { AppLayout } from '../../components/layout/AppLayout';
+import { AppLayout } from '../components/layout/AppLayout';
 
 export function HomePage() {
   return (
