@@ -35,9 +35,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { AddItemDrawer } from '../components/common/AddItemDrawer';
 import { AppLayout } from '../components/layout/AppLayout';
-import { useInventory } from '../hooks/useInventory';
-import { createItem, CreateItemRequest } from '../services/items.service';
+import { useInventoryContext } from '../contexts/InventoryContext';
 import { InventoryItem, mapItemResponseToInventory } from '../models/item';
+import { createItem, CreateItemRequest } from '../services/items.service';
 import classes from '../styles/TableScrollArea.module.css';
 
 interface ThProps {
@@ -80,7 +80,9 @@ function sortData(
   payload: { sortBy: keyof InventoryItem | null; reversed: boolean; search: string }
 ) {
   const { sortBy } = payload;
-  if (!sortBy) {return filterData(data, payload.search);}
+  if (!sortBy) {
+    return filterData(data, payload.search);
+  }
 
   return filterData(
     [...data].sort((a, b) => {
@@ -113,7 +115,9 @@ const colors = [
 const letterColorMap = new Map<string, string>();
 
 export const getCategoryColor = (category: string): string => {
-  if (!category) {return 'gray';}
+  if (!category) {
+    return 'gray';
+  }
 
   if (!letterColorMap.has(category)) {
     const color = colors[letterColorMap.size % colors.length];
@@ -124,7 +128,7 @@ export const getCategoryColor = (category: string): string => {
 };
 
 export function InventoryPage() {
-  const { items, loading, error } = useInventory();
+  const { items, loading, error, refresh } = useInventoryContext();
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [sortBy, setSortBy] = useState<keyof InventoryItem | null>(null);
@@ -133,13 +137,12 @@ export function InventoryPage() {
 
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 
-  const [localItems, setLocalItems] = useState<InventoryItem[]>([]);
   const handleAddItem = async (payload: CreateItemRequest) => {
     try {
       const response = await createItem(payload);
       const newItem = mapItemResponseToInventory(response);
 
-      setLocalItems((prev) => [...prev, newItem]);
+      refresh();
 
       notifications.show({
         title: 'Item added',
@@ -158,8 +161,7 @@ export function InventoryPage() {
     }
   };
 
-  const allItems = [...items, ...localItems];
-  const sortedData = sortData(allItems, { sortBy, reversed: reverseSortDirection, search });
+  const sortedData = sortData(items, { sortBy, reversed: reverseSortDirection, search });
 
   const setSorting = (field: keyof InventoryItem) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
@@ -276,11 +278,6 @@ export function InventoryPage() {
               Add Item
             </Button>
           </Group>
-          {selection.length > 0 && (
-            <Text size="sm" c="blue" mb="md">
-              {selection.length} item{selection.length !== 1 ? 's' : ''} selected
-            </Text>
-          )}
         </div>
 
         {loading ? (
@@ -356,6 +353,12 @@ export function InventoryPage() {
               </Table.Tbody>
             </Table>
           </ScrollArea>
+        )}
+
+        {selection.length > 0 && (
+          <Text size="sm" c="blue" mt="sm">
+            {selection.length} item{selection.length !== 1 ? 's' : ''} selected
+          </Text>
         )}
       </div>
 
