@@ -1,6 +1,6 @@
 import { IconTableImport, IconUpload, IconX } from '@tabler/icons-react';
 import { Group, Text } from '@mantine/core';
-import { Dropzone, DropzoneProps, FileRejection } from '@mantine/dropzone';
+import { Dropzone, DropzoneProps } from '@mantine/dropzone';
 
 const CSV_LIKE_TYPE = [
   'text/csv',
@@ -10,14 +10,14 @@ const CSV_LIKE_TYPE = [
 
 interface UploadDropzoneProps extends Partial<DropzoneProps> {
   onFileAccepted: (file: File) => void;
-  onFileRejected?: (fileRejections: FileRejection[]) => void;
+  onFileRejected?: () => void;
 }
 
 export function UploadDropzone({ onFileAccepted, onFileRejected, ...props }: UploadDropzoneProps) {
   return (
     <Dropzone
       onDrop={(files) => {
-        if (files[0]) onFileAccepted(files[0]);
+        if (files[0]) {onFileAccepted(files[0]);}
       }}
       onReject={onFileRejected}
       maxSize={5 * 1024 ** 2}

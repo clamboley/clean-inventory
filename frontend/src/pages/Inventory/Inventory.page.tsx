@@ -80,7 +80,7 @@ function sortData(
   payload: { sortBy: keyof InventoryItem | null; reversed: boolean; search: string }
 ) {
   const { sortBy } = payload;
-  if (!sortBy) return filterData(data, payload.search);
+  if (!sortBy) {return filterData(data, payload.search);}
 
   return filterData(
     [...data].sort((a, b) => {
@@ -113,7 +113,7 @@ const colors = [
 const letterColorMap = new Map<string, string>();
 
 export const getCategoryColor = (category: string): string => {
-  if (!category) return 'gray';
+  if (!category) {return 'gray';}
 
   if (!letterColorMap.has(category)) {
     const color = colors[letterColorMap.size % colors.length];
@@ -338,7 +338,7 @@ export function InventoryPage() {
                   >
                     Location
                   </Th>
-                  <Table.Th></Table.Th>
+                  <Table.Th />
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>

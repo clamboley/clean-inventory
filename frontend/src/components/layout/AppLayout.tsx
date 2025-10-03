@@ -22,9 +22,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <AppShell.Main>
         <Grid>
-          <Grid.Col span={0.5}></Grid.Col>
+          <Grid.Col span={0.5} />
           <Grid.Col span={11}>{children}</Grid.Col>
-          <Grid.Col span={0.5}></Grid.Col>
+          <Grid.Col span={0.5} />
         </Grid>
       </AppShell.Main>
     </AppShell>

@@ -33,7 +33,7 @@ export function DashboardPage() {
     <AppLayout>
       <UploadDropzone
         onFileAccepted={handleUpload}
-        onFileRejected={(fileRejections) =>
+        onFileRejected={() =>
           notifications.show({
             title: 'Rejected file',
             message: 'Unsupported file type or too large',

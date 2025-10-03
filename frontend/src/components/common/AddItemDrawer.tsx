@@ -42,7 +42,7 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
   };
 
   const handleSubmit = () => {
-    if (!isValid) return;
+    if (!isValid) {return;}
 
     const payload: CreateItemRequest = {
       name: form.name,
