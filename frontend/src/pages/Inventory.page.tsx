@@ -151,10 +151,9 @@ export function InventoryPage() {
         icon: <IconCheck size={16} />,
       });
     } catch (err) {
-      console.error('Failed to create item:', err);
       notifications.show({
         title: 'Add failed',
-        message: 'Could not add item. Please try again.',
+        message: `Failed to add item: ${err instanceof Error ? err.message : 'Unknown error'}`,
         color: 'red',
         icon: <IconX size={16} />,
       });

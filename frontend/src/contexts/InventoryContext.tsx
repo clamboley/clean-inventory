@@ -23,7 +23,6 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       setItems(data.map(mapItemResponseToInventory));
       setError(null);
     } catch (err: any) {
-      console.error(err);
       setError(err.message ?? 'Failed to load inventory');
     } finally {
       setLoading(false);

@@ -17,10 +17,7 @@ export function DashboardPage() {
         message: `${createdCount} items created, ${errorCount} rows had errors.`,
         color: errorCount > 0 ? 'yellow' : 'green',
       });
-
-      console.log('Import result:', data);
     } catch (err) {
-      console.error('Import failed', err);
       notifications.show({
         title: 'Upload error',
         message: String(err),
@@ -36,7 +33,7 @@ export function DashboardPage() {
         onFileRejected={() =>
           notifications.show({
             title: 'Rejected file',
-            message: 'Unsupported file type or too large',
+            message: 'Unsupported file type or too large.',
             color: 'red',
           })
         }
