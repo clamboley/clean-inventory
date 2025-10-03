@@ -29,7 +29,6 @@ export interface CreateItemRequest {
 export async function createItem(payload: CreateItemRequest): Promise<ItemResponse> {
   return apiFetch<ItemResponse>('/items', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 }
