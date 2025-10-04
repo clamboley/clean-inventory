@@ -79,7 +79,7 @@ async def update_item(item_id: UUID, req: ItemUpdateRequest, request: Request) -
     "/{item_id}",
     summary="Delete an item",
     description="Remove an item from the database by its unique ID",
-    status_code=HTTPStatus.NO_CONTENT,
+    status_code=HTTPStatus.OK,
 )
 async def delete_item(item_id: UUID, request: Request) -> None:
     """Delete an item from the database."""
@@ -88,6 +88,8 @@ async def delete_item(item_id: UUID, request: Request) -> None:
         await service.delete_item(item_id)
     except ItemNotFoundError as e:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
+
+    return {"message": "Item deleted successfully"}
 
 
 @item_router.post(
