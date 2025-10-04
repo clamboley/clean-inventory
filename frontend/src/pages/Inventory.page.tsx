@@ -34,10 +34,17 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { AddItemDrawer } from '../components/common/AddItemDrawer';
+import { UpdateItemModal } from '../components/common/UpdateItemModal';
 import { AppLayout } from '../components/layout/AppLayout';
 import { useInventoryContext } from '../contexts/InventoryContext';
 import { InventoryItem, mapItemResponseToInventory } from '../models/item';
-import { createItem, CreateItemRequest, deleteItem } from '../services/items.service';
+import {
+  createItem,
+  CreateItemRequest,
+  deleteItem,
+  updateItem,
+  UpdateItemRequest,
+} from '../services/items.service';
 import classes from '../styles/TableScrollArea.module.css';
 
 interface ThProps {
@@ -129,6 +136,7 @@ export const getCategoryColor = (category: string): string => {
 
 export function InventoryPage() {
   const { items, loading, error, refresh } = useInventoryContext();
+
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [sortBy, setSortBy] = useState<keyof InventoryItem | null>(null);
@@ -136,7 +144,6 @@ export function InventoryPage() {
   const [selection, setSelection] = useState<string[]>([]);
 
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
-
   const handleAddItem = async (payload: CreateItemRequest) => {
     try {
       const response = await createItem(payload);
@@ -154,6 +161,29 @@ export function InventoryPage() {
       notifications.show({
         title: 'Add failed',
         message: `Failed to add item: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
+    }
+  };
+
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [updateModalOpened, setUpdateModalOpened] = useState(false);
+  const handleUpdateItem = async (itemId: string, payload: UpdateItemRequest) => {
+    try {
+      const response = await updateItem(itemId, payload);
+      refresh();
+
+      notifications.show({
+        title: 'Item updated',
+        message: `${response.name} has been updated successfully.`,
+        color: 'green',
+        icon: <IconCheck size={16} />,
+      });
+    } catch (err) {
+      notifications.show({
+        title: 'Update failed',
+        message: `Failed to update item: ${err instanceof Error ? err.message : 'Unknown error'}`,
         color: 'red',
         icon: <IconX size={16} />,
       });
@@ -240,7 +270,14 @@ export function InventoryPage() {
         </Table.Td>
         <Table.Td>
           <Group gap={0} justify="flex-end">
-            <ActionIcon variant="subtle" color="gray">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={() => {
+                setEditingItem(item);
+                setUpdateModalOpened(true);
+              }}
+            >
               <IconPencil size={16} stroke={1.5} />
             </ActionIcon>
             <ActionIcon variant="subtle" color="red" onClick={() => handleDeleteItem(item.id)}>
@@ -383,6 +420,25 @@ export function InventoryPage() {
 
       {/* Drawer for adding an item */}
       <AddItemDrawer opened={drawerOpened} onClose={closeDrawer} onSubmit={handleAddItem} />
+
+      {/* Modal for updating an item */}
+      {editingItem && (
+        <UpdateItemModal
+          opened={updateModalOpened}
+          onClose={() => setUpdateModalOpened(false)}
+          item={{
+            id: editingItem.id,
+            name: editingItem.item,
+            category: editingItem.category,
+            serial_number_1: editingItem.serialNumber1,
+            serial_number_2: editingItem.serialNumber2,
+            serial_number_3: editingItem.serialNumber3,
+            owner: editingItem.ownerEmail,
+            location: editingItem.location,
+          }}
+          onSubmit={handleUpdateItem}
+        />
+      )}
     </AppLayout>
   );
 }
