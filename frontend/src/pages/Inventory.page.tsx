@@ -37,7 +37,7 @@ import { AddItemDrawer } from '../components/common/AddItemDrawer';
 import { AppLayout } from '../components/layout/AppLayout';
 import { useInventoryContext } from '../contexts/InventoryContext';
 import { InventoryItem, mapItemResponseToInventory } from '../models/item';
-import { createItem, CreateItemRequest } from '../services/items.service';
+import { createItem, CreateItemRequest, deleteItem } from '../services/items.service';
 import classes from '../styles/TableScrollArea.module.css';
 
 interface ThProps {
@@ -160,6 +160,26 @@ export function InventoryPage() {
     }
   };
 
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await deleteItem(itemId);
+      refresh();
+      notifications.show({
+        title: 'Item deleted',
+        message: `Item has been deleted successfully.`,
+        color: 'green',
+        icon: <IconCheck size={16} />,
+      });
+    } catch (err) {
+      notifications.show({
+        title: 'Delete failed',
+        message: `Failed to delete item: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
+    }
+  };
+
   const sortedData = sortData(items, { sortBy, reversed: reverseSortDirection, search });
 
   const setSorting = (field: keyof InventoryItem) => {
@@ -223,7 +243,7 @@ export function InventoryPage() {
             <ActionIcon variant="subtle" color="gray">
               <IconPencil size={16} stroke={1.5} />
             </ActionIcon>
-            <ActionIcon variant="subtle" color="red">
+            <ActionIcon variant="subtle" color="red" onClick={() => handleDeleteItem(item.id)}>
               <IconTrash size={16} stroke={1.5} />
             </ActionIcon>
             <Menu
