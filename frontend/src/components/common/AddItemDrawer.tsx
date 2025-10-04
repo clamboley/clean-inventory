@@ -8,7 +8,6 @@ import {
   Select,
   Stack,
   TextInput,
-  Title,
 } from '@mantine/core';
 import { useUsersContext } from '../../contexts/UsersContext';
 import { CreateItemRequest } from '../../services/items.service';
@@ -77,7 +76,7 @@ export function AddItemDrawer({ opened, onClose, onSubmit }: AddItemDrawerProps)
     <Drawer
       opened={opened}
       onClose={onClose}
-      title={<Title order={3}>Add Inventory Item</Title>}
+      title="Add Inventory Item"
       size="md"
       padding="xl"
       overlayProps={{ backgroundOpacity: 0.55, blur: 2 }}
