@@ -1,14 +1,15 @@
+import { SimpleGrid, Skeleton } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { DownloadZone } from '../components/common/DownloadAllZone';
 import { UploadDropzone } from '../components/common/UploadDropzone';
 import { AppLayout } from '../components/layout/AppLayout';
-import { uploadItems } from '../services/items.service';
 import { ImportItemsResponse } from '../models/item';
+import { uploadItems } from '../services/items.service';
 
 export function DashboardPage() {
   async function handleUpload(file: File) {
     try {
       const data: ImportItemsResponse = await uploadItems(file);
-
       const createdCount = data.created.length;
       const errorCount = data.errors.length;
 
@@ -28,16 +29,27 @@ export function DashboardPage() {
 
   return (
     <AppLayout>
-      <UploadDropzone
-        onFileAccepted={handleUpload}
-        onFileRejected={() =>
-          notifications.show({
-            title: 'Rejected file',
-            message: 'Unsupported file type or too large.',
-            color: 'red',
-          })
-        }
-      />
+      <SimpleGrid
+        cols={3}
+        spacing="lg"
+      >
+        <Skeleton />
+        <Skeleton />
+        <UploadDropzone
+          onFileAccepted={handleUpload}
+          onFileRejected={() =>
+            notifications.show({
+              title: 'Rejected file',
+              message: 'Unsupported file type or too large.',
+              color: 'red',
+            })
+          }
+        />
+
+        <Skeleton />
+        <Skeleton />
+        <DownloadZone />
+      </SimpleGrid>
     </AppLayout>
   );
 }

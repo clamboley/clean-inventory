@@ -1,8 +1,12 @@
+import csv
+import io
 from http import HTTPStatus
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Query, Request, UploadFile
+from fastapi.responses import StreamingResponse
+from openpyxl import Workbook
 
 from app.api.validators.item_validators import (
     ImportItemsResponse,
@@ -32,6 +36,120 @@ async def list_items(request: Request) -> ItemsListResponse:
     return ItemsListResponse(items=api_items)
 
 
+@item_router.post(
+    "",
+    summary="Create an item",
+    description="Add a new item to the database",
+    status_code=HTTPStatus.CREATED,
+)
+async def create_item(req: ItemCreateRequest, request: Request) -> ItemResponse:
+    """Create a new item in the database."""
+    service: ItemService = request.app.state.item_service
+    item = await service.create_item(**req.model_dump())
+    return ItemResponse.model_validate(vars(item))
+
+
+@item_router.post(
+    "/import",
+    summary="Import items from file",
+    description="Upload a CSV or Excel (.xls/.xlsx) file that contains items to create.",
+    status_code=HTTPStatus.CREATED,
+)
+async def import_items(file: UploadFile, request: Request) -> ImportItemsResponse:
+    """Accepts a multipart file (CSV/XLS/XLSX), validates rows and creates items."""
+    service: ItemService = request.app.state.item_service
+    contents = await file.read()
+    created_entities, errors = await service.import_items_from_file(file.filename, contents)
+
+    created_api = [ItemResponse.model_validate(vars(item)) for item in created_entities]
+    return ImportItemsResponse(created=created_api, errors=errors)
+
+
+@item_router.get(
+    "/export",
+    summary="Export all items",
+    description="Download all items as CSV or Excel file",
+)
+async def export_items(
+    request: Request,
+    file_type: Annotated[str, Query(enum=["csv", "xlsx"])] = "csv",
+) -> StreamingResponse:
+    """Export the entire inventory as a CSV or Excel file."""
+    service: ItemService = request.app.state.item_service
+    items = await service.list_items()
+
+    columns = [
+        "id",
+        "name",
+        "category",
+        "serial_number_1",
+        "serial_number_2",
+        "serial_number_3",
+        "owner",
+        "location",
+        "status",
+        "created_at",
+    ]
+
+    if file_type == "xlsx":
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Inventory"
+        ws.append(columns)
+
+        for item in items:
+            ws.append(
+                [
+                    str(item.id),
+                    item.name,
+                    item.category,
+                    item.serial_number_1,
+                    item.serial_number_2 or "",
+                    item.serial_number_3 or "",
+                    item.owner or "",
+                    item.location or "",
+                    item.status,
+                    item.created_at.isoformat(),
+                ],
+            )
+
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        headers = {"Content-Disposition": 'attachment; filename="inventory.xlsx"'}
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers=headers,
+        )
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(columns)
+
+    for item in items:
+        writer.writerow(
+            [
+                item.id,
+                item.name,
+                item.category,
+                item.serial_number_1,
+                item.serial_number_2 or "",
+                item.serial_number_3 or "",
+                item.owner or "",
+                item.location or "",
+                item.status,
+                item.created_at.isoformat(),
+            ],
+        )
+
+    buffer.seek(0)
+
+    headers = {"Content-Disposition": 'attachment; filename="inventory.csv"'}
+    return StreamingResponse(buffer, media_type="text/csv", headers=headers)
+
+
 @item_router.get(
     "/{item_id}",
     summary="Get an item",
@@ -45,19 +163,6 @@ async def get_item(item_id: UUID, request: Request) -> ItemResponse:
         return ItemResponse.model_validate(vars(item))
     except ItemNotFoundError as e:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
-
-
-@item_router.post(
-    "",
-    summary="Create an item",
-    description="Add a new item to the database",
-    status_code=HTTPStatus.CREATED,
-)
-async def create_item(req: ItemCreateRequest, request: Request) -> ItemResponse:
-    """Create a new item in the database."""
-    service: ItemService = request.app.state.item_service
-    item = await service.create_item(**req.model_dump())
-    return ItemResponse.model_validate(vars(item))
 
 
 @item_router.patch(
@@ -90,19 +195,3 @@ async def delete_item(item_id: UUID, request: Request) -> None:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail=str(e)) from e
 
     return {"message": "Item deleted successfully"}
-
-
-@item_router.post(
-    "/import",
-    summary="Import items from file",
-    description="Upload a CSV or Excel (.xls/.xlsx) file that contains items to create.",
-    status_code=HTTPStatus.CREATED,
-)
-async def import_items(file: UploadFile, request: Request) -> ImportItemsResponse:
-    """Accepts a multipart file (CSV/XLS/XLSX), validates rows and creates items."""
-    service: ItemService = request.app.state.item_service
-    contents = await file.read()
-    created_entities, errors = await service.import_items_from_file(file.filename, contents)
-
-    created_api = [ItemResponse.model_validate(vars(item)) for item in created_entities]
-    return ImportItemsResponse(created=created_api, errors=errors)
