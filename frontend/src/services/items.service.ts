@@ -63,3 +63,7 @@ export async function uploadItems(file: File): Promise<ImportItemsResponse> {
     body: fd,
   });
 }
+
+export async function downloadItems(format: 'csv' | 'xlsx' = 'csv'): Promise<Blob> {
+  return apiFetch<Blob>(`/items/export?format=${format}`);
+}
