@@ -3,7 +3,6 @@ import {
   IconError404,
   IconGauge,
   IconHistory,
-  IconHome2,
   IconPackage,
 } from '@tabler/icons-react';
 import { Indicator, Stack } from '@mantine/core';
@@ -21,8 +20,8 @@ export function Navbar({ collapsed, setCollapsed }: NavbarProps) {
       <Stack gap="xs" style={{ flexGrow: 1 }}>
         <NavItem
           collapsed={collapsed}
-          label="Home"
-          icon={<IconHome2 size={20} stroke={1.5} />}
+          label="Inventory"
+          icon={<IconPackage size={20} stroke={1.5} />}
           to="/"
         />
 
@@ -35,13 +34,6 @@ export function Navbar({ collapsed, setCollapsed }: NavbarProps) {
             </Indicator>
           }
           to="/dashboard"
-        />
-
-        <NavItem
-          collapsed={collapsed}
-          label="Inventory"
-          icon={<IconPackage size={20} stroke={1.5} />}
-          to="/inventory"
         />
 
         <NavItem
