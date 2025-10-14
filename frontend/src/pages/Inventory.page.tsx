@@ -3,12 +3,9 @@ import {
   IconCheck,
   IconChevronDown,
   IconChevronUp,
-  IconDots,
-  IconMessages,
-  IconNote,
+  IconHistory,
   IconPencil,
   IconPlus,
-  IconReportAnalytics,
   IconSearch,
   IconSelector,
   IconTrash,
@@ -24,11 +21,11 @@ import {
   Checkbox,
   Group,
   Loader,
-  Menu,
   ScrollArea,
   Table,
   Text,
   TextInput,
+  Tooltip,
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -270,43 +267,30 @@ export function InventoryPage() {
         </Table.Td>
         <Table.Td>
           <Group gap={0} justify="flex-end">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              onClick={() => {
-                setEditingItem(item);
-                setUpdateModalOpened(true);
-              }}
-            >
-              <IconPencil size={16} stroke={1.5} />
-            </ActionIcon>
-            <ActionIcon variant="subtle" color="red" onClick={() => handleDeleteItem(item.id)}>
-              <IconTrash size={16} stroke={1.5} />
-            </ActionIcon>
-            <Menu
-              transitionProps={{ transition: 'pop' }}
-              withArrow
-              position="bottom-end"
-              withinPortal
-            >
-              <Menu.Target>
-                <ActionIcon variant="subtle" color="gray">
-                  <IconDots size={16} stroke={1.5} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item leftSection={<IconMessages size={16} stroke={1.5} />}>
-                  Send message
-                </Menu.Item>
-                <Menu.Item leftSection={<IconNote size={16} stroke={1.5} />}>Add note</Menu.Item>
-                <Menu.Item leftSection={<IconReportAnalytics size={16} stroke={1.5} />}>
-                  Analytics
-                </Menu.Item>
-                <Menu.Item leftSection={<IconTrash size={16} stroke={1.5} />} color="red">
-                  Terminate contract
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+            <Tooltip withArrow label="Update">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={() => {
+                  setEditingItem(item);
+                  setUpdateModalOpened(true);
+                }}
+              >
+                <IconPencil size={16} stroke={1.5} />
+              </ActionIcon>
+            </Tooltip>
+
+            <Tooltip withArrow label="Delete">
+              <ActionIcon variant="subtle" color="red" onClick={() => handleDeleteItem(item.id)}>
+                <IconTrash size={16} stroke={1.5} />
+              </ActionIcon>
+            </Tooltip>
+
+            <Tooltip withArrow label="History">
+              <ActionIcon variant="subtle" color="gray">
+                <IconHistory size={16} stroke={1.5} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
         </Table.Td>
       </Table.Tr>
